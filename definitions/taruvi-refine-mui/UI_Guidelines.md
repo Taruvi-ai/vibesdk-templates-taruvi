@@ -1,3 +1,5 @@
+> **Icons on this platform:** all icons render through the FontAwesome-backed shim `src/components/icons.tsx`. `*Rounded` names below refer to shim exports; extend the shim rather than importing `@mui/icons-material` (that package cannot be installed here).
+
 # Taruvi UI Guidelines
 
 This document captures what the **Taruvi design system** specifies that the MUI theme alone cannot enforce — page-level patterns, ambiguous color choices, and conventions you need to follow by hand.
@@ -217,7 +219,7 @@ Pick the variant by trigger; never use a generic "no data" for all four.
 
 | Variant | When | Icon | Heading / body | CTA |
 |---|---|---|---|---|
-| **No data yet** | `total===0 && !search && !filters` | `FolderOpenRounded` (resource icon) | "No projects yet" · "Get started by creating your first project" | `<Button variant="contained">+ Create project</Button>` |
+| **No data yet** | `total===0 && !search && !filters` | `FolderOpenRounded` from `src/components/icons.tsx` (extend the shim if missing) | "No projects yet" · "Get started by creating your first project" | `<Button variant="contained">+ Create project</Button>` |
 | **No results found** | search active, 0 rows | `SearchOffRounded` (muted) | "No results found" · "Try adjusting your search or filter" | `<Button variant="outlined" onClick={clearSearch}>Clear search</Button>` |
 | **No matching items** | filters active, 0 rows | `FilterListRounded` (muted) | "No matching items" · "No items match the current filters" | `<Button variant="outlined" onClick={clearFilters}>Clear all filters</Button>` |
 | **Unable to load** | `isError` | `ErrorRounded` (error color) | "Unable to load data" · "There was a problem loading your data" | `<Button variant="contained" onClick={retry}>Try again</Button>` |

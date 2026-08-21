@@ -21,9 +21,7 @@ This is a **Refine.dev v5** project - a React-based framework for building admin
 
 **CRITICAL:** Even if the user asks for plain HTML, CSS, or JavaScript — always use React, Refine v5 hooks, MUI components, and TypeScript. Do not build outside the framework.
 
-IMPORTANT: Always use Context7 MCP Skill when I need library/API, Refine v5, MUI documentation without me having to explicitly ask.
-
-**When confused or need clarification:** Use the Task tool with `subagent_type='Explore'` and set thoroughness to "medium" or "very thorough" to understand the codebase patterns before making changes.
+**When confused or need clarification:** read the relevant skill (`activate_skill`) and its references before changing code.
 
 ## Pre-Work Checklist
 
@@ -51,34 +49,7 @@ If the file is missing, no errors have been captured yet — ask the user to rep
 
 For any task that **renders, styles, or restyles UI** — new pages, layouts, forms, tables, charts, status badges, colors, typography, spacing, theme work, MUI overrides, or any "make it look like X" request:
 
-1. You MUST open and read [`UI_Guidelines.md`](UI_Guidelines.md) first. It is the companion to the MUI theme and resolves design-system ambiguities the theme cannot encode on its own.
-2. The single source of truth for design tokens is [`themeOptions.ts`](themeOptions.ts) — import `taruviTokens` for raw values:
-   ```ts
-   import { taruviTokens } from "../../themeOptions"; // or from "@/theme/themeOptions"
-   ```
-   Never hardcode brand hex strings (`#1E88E5`, `#388e3c`, `#1AB3E6`, etc.) — pull them from `taruviTokens`.
-3. Prefer plain MUI components (`<Button>`, `<Chip>`, `<Card>`, `<TextField>`, `<Alert>`, `<Table*>`, `<ListItemButton>`, `<Breadcrumbs>`, `<Tabs>`, `<Dialog>`, …) — the theme already applies every spec'd size, weight, radius, padding, shadow, and color via component overrides. Do not reimplement these styles with `sx` or custom CSS.
-4. For things the theme cannot enforce (page-level layout, form-row grid, hero gradient, status chip mapping to MUI color slots, "ON HOLD" / "TO DO" chips, chart colors via Recharts, icon conventions, avatar sizing) — follow the snippets in `UI_Guidelines.md`.
-5. Use **`*Rounded`** icon variants from `@mui/icons-material` (e.g., `EditRoundedIcon`, `AddRoundedIcon`) — the design system uses Material Icons Rounded, not the filled defaults.
-6. **Page anatomy is mandatory**, not optional decoration. For any Refine page (list, show, create/edit, dashboard), the visual contract lives in [`UI_Guidelines.md`](UI_Guidelines.md) and the **implementation lives in the `taruvi-refine-providers` skill — read both before writing the page**, not just the styling layer. In particular:
-   - **Every list page MUST ship with a search input, at least one filter control, an active-filter chip row, server-side pagination, and the four distinct empty-state variants** (no data yet / no results / no matching items / unable to load) — see [`§4.6`](UI_Guidelines.md) + [`§4.7`](UI_Guidelines.md), plus the skill's "DataGrid checklist" + `database-provider.md` for the wiring. Apply column-type rules from [`§4.12`](UI_Guidelines.md) (text left, numbers right, `MMM DD, YYYY` dates, actions right, 5-6 columns max).
-   - **Every show / detail page MUST include** breadcrumb + H2 title + status chip + action cluster + meta line + tabs-with-counts for related data — see [`§4.11`](UI_Guidelines.md). Bare field dumps are incomplete.
-   - **Every destructive action (delete, archive, bulk-delete, …) MUST go through a confirmation dialog** matching [`§4.8`](UI_Guidelines.md) — title is a question, body names the specific item or count and states "This action cannot be undone", primary CTA is `color="error"` with the verb (not "OK"). Wiring `useDelete` directly to a delete icon click is a bug.
-   - **Lists with selection checkboxes MUST have a bulk-actions toolbar** ([`§4.9`](UI_Guidelines.md)) that appears on selection, shows the count, and routes destructive bulk actions through §4.8.
-   - **Never render a blank page during data load.** Use one of the three loading patterns from [`§4.10`](UI_Guidelines.md) — skeleton for initial loads, spinner overlay for mid-action refetches, inline button spinner for async submits.
-   - **Forms** follow [`§4.3`](UI_Guidelines.md) — single-column default, two-column for related paired inputs, section titles for grouping, Cancel-left/Save-right actions, and the 8-item accessibility checklist (labels, types, contrast, error specificity, keyboard, aria-describedby, required marker, 44px mobile).
-   - Filters and search push into Refine's server-side `filters[]`, never into component state filtered in React.
-
-   If you can't show that you read the skill section relevant to the page type you're building, you aren't ready to write it.
-
-If `UI_Guidelines.md` or `themeOptions.ts` is missing, stop and tell the user — do not implement design from memory.
-
-## Mandatory Taruvi Preflight
-
-For any task involving Taruvi, Refine + Taruvi, `@taruvi/sdk`, or `@taruvi/refine-providers`:
-
-1. You MUST open and read `.agents/skills/taruvi-app-developer/SKILL.md` first — it routes you to the right module skills.
-2. If `.agents/skills/taruvi-app-developer/SKILL.md` is missing, inform the user to install skills by running `npx skills add Taruvi-ai/taruvi-skills`.
+1. Activate the platform skills first: `taruvi-app-developer` (backend/schema/policies via the `tool_taruvi_*` MCP tools), `taruvi-refine-providers` (Refine wiring), and `taruvibase-platform` (how credentials and the runtime work here).
 3. Follow its Step 4 to load all relevant module skills before writing any code.
 
 Do not implement from memory. Do not treat prior knowledge as sufficient. If these files are unavailable, stop and say so.
@@ -255,9 +226,12 @@ TARUVI_APP_SLUG=sample-app
 // src/taruviClient.ts
 import { Client } from "@taruvi/sdk";
 export const taruviClient = new Client({
-  apiUrl: __TARUVI_SITE_URL__,
-  apiKey: __TARUVI_API_KEY__,
-  appSlug: __TARUVI_APP_SLUG__,
+  // Loaded at runtime from ./api/taruvi-config (non-secret). The apiKey field
+  // is required by the constructor but never transmitted; auth is per-user
+  // session tokens. There is NO credential anywhere in this project.
+  apiUrl: runtimeConfig.siteUrl,
+  apiKey: "browser",
+  appSlug: runtimeConfig.appSlug,
 });
 // Used by all providers. Direct SDK: taruviClient.httpClient.get("api/...");
 ```
@@ -272,19 +246,20 @@ export const taruviClient = new Client({
 
 ## Quick Reference
 
-**File Paths:** App: `/src/App.tsx` | Providers: `/src/providers/refineProviders.ts` | Client: `/src/taruviClient.ts` | Navkit profile menu: `/src/navkit/useNavkitProfileMenuItems.tsx` | Pages: `/src/pages/{resource}/` | Components: `/src/components/` | Env: `/.env.local`
+**File Paths:** App: `/src/App.tsx` | Providers: `/src/providers/refineProviders.ts` | Client: `/src/taruviClient.ts` | Pages: `/src/pages/{resource}/` | Components: `/src/components/` | Server: `/worker/index.ts` (the `App` Durable Object)
 
-**Navkit profile menu:** Custom avatar-dropdown items live in `useNavkitProfileMenuItems` and are passed to `<Navkit profileMenuItems={...} />` in `App.tsx`. See [docs/GETTING_STARTED.md — Custom profile menu items](docs/GETTING_STARTED.md#custom-profile-menu-items).
+**No top nav bar:** `@taruvi/navkit` is not bundleable on this platform (it ships raw source with `.svg` imports); the sidenav owns navigation and logout.
 
 **Key Commands:**
 ```bash
-npm run dev          # Start dev server
-npm run build        # Build for production
-npm run refine       # Run Refine CLI
+There is no shell and no dev server. The platform builds and serves the app:
+call `deploy_space` after editing files, then `get_browser_console_logs` to
+verify. Client code is bundled from `src/index.tsx` (the `client` field in
+package.json) to `./index.js`, referenced by `public/index.html`.
 ```
 
 **IMPORTANT - Development Server:**
-- **DO NOT run `npm run dev` or `npm run build`** - The development server is already running
+- Deploy with the `deploy_space` tool; never try to run npm/vite commands
 - Changes auto-trigger hot reload.
 - Only run build commands if explicitly requested
 
@@ -328,7 +303,7 @@ npm run refine       # Run Refine CLI
 2. **Always read files before editing** - Use Read tool
 3. **Follow existing patterns** - Check similar components
 4. **Use TodoWrite for complex tasks** - Track progress
-5. **Explore when confused** - Use Task tool with Explore agent
+5. **Read the skills when confused** - activate_skill + read_skill_resource
 6. **Create spec doc before starting** - Understand context
 7. **Test incrementally** - Don't make many changes at once
 8. **Validate schemas** - Use MCP tools to check table structure
@@ -352,7 +327,7 @@ For any UI/style/theme work, follow [`UI_Guidelines.md`](UI_Guidelines.md) and `
 
 ### Automated Deploy (via script)
 ```bash
-npm run deploy
+Use the platform's publish flow; there is no npm deploy.
 ```
 Prompts for site name, then builds, zips `dist/`, and uploads to Taruvi frontend workers API.
 
@@ -360,7 +335,6 @@ Prompts for site name, then builds, zips `dist/`, and uploads to Taruvi frontend
 
 1. **Build:**
    ```bash
-   npm run build
    ```
 
 2. **Zip the dist folder:**
@@ -389,5 +363,5 @@ Prompts for site name, then builds, zips `dist/`, and uploads to Taruvi frontend
 
 ### Build Notes (Docker)
 - `refine build` does NOT work inside the Docker container (symlinked node_modules)
-- Use `vite build --configLoader runner` directly (already configured in `npm run build`)
+- The platform bundles with @cloudflare/worker-bundler; there is no Vite
 - Set `XDG_CONFIG_HOME=/tmp` if running refine CLI commands

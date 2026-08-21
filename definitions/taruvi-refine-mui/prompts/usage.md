@@ -6,16 +6,16 @@ This is a **Refine v5 + React 19 + Material UI v7 + TaruviBase** template.
 This template ships two skill documents. Their full text is already provided to you
 in the template's important files — do not implement from memory instead of them:
 
-- `.agents/skills/taruvi-app-developer/SKILL.md` — **backend**: provisioning datatables
+- `taruvi-app-developer` (activate_skill) — **backend**: provisioning datatables
   and schemas, Cerbos policies, roles/users, buckets, secrets, analytics queries, raw SQL
   (all via the `taruvi_backend` / `taruvi_list_backend_tools` agent tools), and Python
   function bodies for the Taruvi function runtime.
-- `.agents/skills/taruvi-refine-providers/SKILL.md` — **frontend**: wiring data/auth/
+- `taruvi-refine-providers` (activate_skill) — **frontend**: wiring data/auth/
   access-control/storage providers, Refine v5 hooks against Taruvi, list pages,
   dashboards, KPI cards, file managers, and debugging 401/403 and token-refresh issues.
 
 Each SKILL.md routes to deeper module docs under its own `references/` directory
-(e.g. `.agents/skills/taruvi-app-developer/references/datatable-schema-patterns.md`).
+(via `read_skill_resource`, e.g. `references/datatable-schema-patterns.md`).
 Read the referenced file before implementing that area — the file tree lists them all.
 
 Build the backend first with the Taruvi tools (create datatables, then seed real data),
@@ -38,7 +38,7 @@ Non-negotiable rules:
 - Renames: `metaData`→`meta`, `sorter`→`sorters`, mutation `isLoading`→`isPending`, `hasPagination:false`→`pagination:{mode:"off"}`.
 
 ### UI
-- MUI components only (theme overrides already applied via `taruviTokens` in `src/theme/themeOptions.ts`); use `*Rounded` Material icon variants; keep the existing shell (`src/components/sidenav`), never build a parallel layout.
+- MUI components only (theme overrides already applied via `taruviTokens` in `src/theme/themeOptions.ts`); icons come from the FontAwesome-backed shim in `src/components/icons.tsx` (never add `@mui/icons-material`); keep the existing shell (`src/components/sidenav`), never build a parallel layout.
 - User feedback goes through the existing Refine notification provider (`useNotificationProvider` from `@refinedev/mui`) — no custom toasts/snackbars.
 - Recharts is available for charts.
 

@@ -6,10 +6,10 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import Dashboard from "@mui/icons-material/Dashboard";
-import MenuIcon from "@mui/icons-material/Menu";
-import Logout from "@mui/icons-material/Logout";
-import ListOutlined from "@mui/icons-material/ListOutlined";
+import { Dashboard } from "../icons";
+import { Menu as MenuIcon } from "../icons";
+import { Logout } from "../icons";
+import { ListOutlined } from "../icons";
 import { useTranslate, type TreeMenuItem, CanAccess } from "@refinedev/core";
 import { getAclResource } from "../../utils/aclResource";
 

@@ -1,4 +1,5 @@
 // Dev-only client-side logger for the Taruvi hackathon template.
+import { taruviRuntimeConfig } from "../taruviClient";
 //
 // Captures: console.error, window.error, unhandledrejection, fetch failures,
 // XHR failures, and manual error-boundary reports. Buffers entries and ships
@@ -159,7 +160,7 @@ const getSessionId = (): string => {
 
 const getAppSlug = (): string => {
   try {
-    return typeof __TARUVI_APP_SLUG__ === "string" ? __TARUVI_APP_SLUG__ : "";
+    return taruviRuntimeConfig.appSlug;
   } catch {
     return "";
   }

@@ -7,7 +7,6 @@ import {
   ThemedLayout,
   useNotificationProvider,
 } from "@refinedev/mui";
-import Navkit from '@taruvi/navkit';
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
@@ -24,44 +23,24 @@ import {
 } from "./providers/refineProviders";
 import { CustomSider, ErrorBoundary, UnsavedChangesDialog } from "./components";
 import { LoginRedirect } from "./components/auth/LoginRedirect";
-import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mode";
+import { ColorModeContextProvider } from "./contexts/color-mode";
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
-import { useContext, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { Home } from "./pages/home";
 import { Login } from "./pages/login";
-import { useNavkitProfileMenuItems } from "./navkit/useNavkitProfileMenuItems";
 
 const AppContent = () => {
-  const { setMode } = useContext(ColorModeContext);
-  const navRef = useRef<HTMLDivElement>(null);
   const { settings } = useAppSettings();
-  const profileMenuItems = useNavkitProfileMenuItems();
 
+  // @taruvi/navkit cannot be bundled on this platform (it ships raw source with
+  // .svg imports), so there is no top nav bar; the sidenav owns navigation and
+  // logout. Layout CSS still reads --nav-height, so zero it explicitly.
   useEffect(() => {
-    if (navRef.current) {
-      const height = navRef.current.offsetHeight;
-      document.documentElement.style.setProperty('--nav-height', `${height}px`);
-    }
+    document.documentElement.style.setProperty('--nav-height', '0px');
   }, []);
 
   return (
     <>
-      <div
-        ref={navRef}
-        data-nav-container
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1300,
-          width: '100%',
-        }}
-      >
-        <Navkit
-          client={taruviClient}
-          getTheme={(theme) => setMode(theme)}
-          profileMenuItems={profileMenuItems}
-        />
-      </div>
       <RefineSnackbarProvider>
             
               <Refine

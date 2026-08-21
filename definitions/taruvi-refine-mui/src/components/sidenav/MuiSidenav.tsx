@@ -11,11 +11,11 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import Dashboard from "@mui/icons-material/Dashboard";
-import Logout from "@mui/icons-material/Logout";
-import SearchIcon from "@mui/icons-material/Search";
+import { Menu as MenuIcon } from "../icons";
+import { ChevronLeft as ChevronLeftIcon } from "../icons";
+import { Dashboard } from "../icons";
+import { Logout } from "../icons";
+import { Search as SearchIcon } from "../icons";
 
 import {
   useMenu,

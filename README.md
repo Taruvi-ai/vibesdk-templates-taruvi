@@ -67,6 +67,17 @@ never place those credentials in a tracked file.
 
 ---
 
+### taruvi-refine-mui now targets the Think/SpaceDO platform
+
+As of 2026-08-21 the `taruvi-refine-mui` template is adapted for the current
+VibeSDK Think architecture (buildathon deployment): the server is a single
+`App extends DurableObject` entry, the client is bundled by
+`@cloudflare/worker-bundler` from the `client` field in package.json (no Vite),
+and no credential exists anywhere in the project - the browser SDK authenticates
+end users via sessions and receives the non-secret site/slug from
+`/api/taruvi-config`. The other 10 definitions still target the retired
+container pipeline and are kept for reference only.
+
 ## Repository Layout
 
 - `reference/`

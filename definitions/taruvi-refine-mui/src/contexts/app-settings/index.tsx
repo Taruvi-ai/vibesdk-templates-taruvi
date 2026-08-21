@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { taruviClient } from "../../taruviClient";
+import { taruviClient, taruviRuntimeConfig } from "../../taruviClient";
 
 /**
  * App Settings Context
@@ -56,7 +56,7 @@ export interface AppSettingsContextType {
 
 // Default settings from environment variables
 const getDefaultSettings = (): AppSettings => ({
-  displayName: __TARUVI_APP_TITLE__ || "App",
+  displayName: "App",
   iconUrl: null,
   primaryColor: "#EAB308", // Default yellow
   secondaryColor: "#8B5CF6", // Default purple
@@ -91,10 +91,10 @@ export const AppSettingsProvider: React.FC<PropsWithChildren> = ({
         return;
       }
 
-      const appSlug = __TARUVI_APP_SLUG__;
+      const appSlug = taruviRuntimeConfig.appSlug;
 
       if (!appSlug) {
-        throw new Error("TARUVI_APP_SLUG is not defined");
+        throw new Error("Taruvi app slug is not configured");
       }
 
       const response = await taruviClient.httpClient.get<AppSettingsAPIResponse>(

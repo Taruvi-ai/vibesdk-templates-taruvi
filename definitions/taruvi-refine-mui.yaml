@@ -1,3 +1,12 @@
+# NOTE: This template targets the Think/SpaceDO platform (buildathon) and its
+# definition directory is SELF-CONTAINED - the zip is built directly from
+# definitions/taruvi-refine-mui/ without the base-reference overlay. The
+# package.json in the overlay is authoritative (exact pins; @mui/system/utils/
+# styled-engine promoted to direct deps to defeat the bundler's flat-install
+# version lottery). @mui/icons-material and @taruvi/navkit are deliberately
+# absent: the former's extraction exceeds the bundler runtime's budget, the
+# latter ships raw src with .svg imports. package_patches below is retained
+# for generator-schema compatibility but is NOT the source of truth.
 name: taruvi-refine-mui
 description: 'Refine v5 + Material UI + TaruviBase (BaaS) template for data-driven
   business apps: CRUD, auth, Cerbos access control, storage, and serverless functions

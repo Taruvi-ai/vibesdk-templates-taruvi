@@ -1,4 +1,5 @@
 import { taruviStorageProvider, type StorageUploadVariables } from "../providers/refineProviders";
+import { taruviRuntimeConfig } from "../taruviClient";
 
 /**
  * Generate storage URL from bucket name and file path
@@ -6,8 +7,8 @@ import { taruviStorageProvider, type StorageUploadVariables } from "../providers
 export const getStorageUrl = (bucket: string, path: string | null | undefined): string => {
   if (!path) return "https://via.placeholder.com/400x600?text=No+Image";
 
-  const baseUrl = __TARUVI_SITE_URL__;
-  const appSlug = __TARUVI_APP_SLUG__;
+  const baseUrl = taruviRuntimeConfig.siteUrl;
+  const appSlug = taruviRuntimeConfig.appSlug;
 
   return `${baseUrl}/api/apps/${appSlug}/storage/buckets/${bucket}/objects/${path}`;
 };

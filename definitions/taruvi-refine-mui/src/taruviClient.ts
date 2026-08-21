@@ -1,26 +1,51 @@
 import { Client } from "@taruvi/sdk";
 
-// Validate required environment variables
-const requiredEnvVars = {
-  TARUVI_SITE_URL: __TARUVI_SITE_URL__,
-  TARUVI_API_KEY: __TARUVI_API_KEY__,
-  TARUVI_APP_SLUG: __TARUVI_APP_SLUG__,
-};
+/**
+ * Taruvi Client, configured at runtime.
+ *
+ * The platform injects the site URL and app slug into the server's env; the
+ * `App` Durable Object serves them (non-secret) at `./api/taruvi-config`. No
+ * credential is embedded here or anywhere in this project: browser calls to
+ * Taruvi authenticate as the signed-in end user via session tokens, which the
+ * SDK manages itself. The `apiKey` below is a required-but-never-transmitted
+ * constructor field - do NOT replace it with a real key.
+ *
+ * Top-level await keeps the export shape (`taruviClient`) identical for every
+ * importer; the bundler targets browsers that support module-level await.
+ */
+interface TaruviRuntimeConfig {
+  siteUrl: string;
+  appSlug: string;
+}
 
-Object.entries(requiredEnvVars).forEach(([key, value]) => {
-  if (!value) {
+async function loadConfig(): Promise<TaruviRuntimeConfig> {
+  // Relative path: the preview serves this app under a path prefix, and
+  // JS-side URLs are not rewritten. Never use a leading slash here.
+  const response = await fetch("./api/taruvi-config");
+  if (!response.ok) {
     throw new Error(
-      `Missing required environment variable: ${key}. ` +
-        `Please check your .env.local file. See .env.example for required variables.`
+      `Could not load Taruvi configuration (${response.status}). ` +
+        "The platform injects TARUVI_SITE_URL and TARUVI_APP_SLUG into the " +
+        "server env; check the deployment.",
     );
   }
-});
+  const config = (await response.json()) as TaruviRuntimeConfig;
+  if (!config.siteUrl || !config.appSlug) {
+    throw new Error(
+      "Taruvi configuration is incomplete. Connect TaruviBase in the platform settings.",
+    );
+  }
+  return config;
+}
+
+const runtimeConfig = await loadConfig();
+
+/** Non-secret runtime configuration (site URL + app slug). */
+export const taruviRuntimeConfig: TaruviRuntimeConfig = runtimeConfig;
 
 /**
- * Taruvi Client instance configured with environment variables.
- * Participant-facing setup uses TARUVI_* variables injected into the client
- * build through Vite configuration.
- * Used for Navkit, DataProviders, and direct SDK operations.
+ * Taruvi Client instance.
+ * Used for Refine providers and direct SDK operations.
  *
  * @example
  * // Use with Refine providers (recommended)
@@ -30,21 +55,11 @@ Object.entries(requiredEnvVars).forEach(([key, value]) => {
  * // Direct SDK usage (advanced)
  * import { taruviClient } from "./taruviClient";
  * const response = await taruviClient.httpClient.get("api/...");
- *
- * @see {@link https://docs.taruvi.com|Taruvi Documentation}
  */
-export const taruviClient = (() => {
-  try {
-    return new Client({
-      apiKey: __TARUVI_API_KEY__,
-      appSlug: __TARUVI_APP_SLUG__,
-      apiUrl: __TARUVI_SITE_URL__,
-    });
-  } catch (error) {
-    console.error("Failed to initialize Taruvi Client:", error);
-    throw new Error(
-      "Taruvi configuration error. Please check your .env.local file. " +
-        "See .env.example for required variables."
-    );
-  }
-})();
+export const taruviClient = new Client({
+  // Required by the constructor, never sent on the wire; auth is per-user
+  // session tokens managed by the SDK.
+  apiKey: "browser",
+  appSlug: runtimeConfig.appSlug,
+  apiUrl: runtimeConfig.siteUrl,
+});
