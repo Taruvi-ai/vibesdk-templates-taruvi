@@ -1,0 +1,8 @@
+[
+  ".redacted_files.json",
+  ".donttouch_files.json",
+  ".important_files.json",
+  ".dev.vars",
+  ".env",
+  "src/lib/errorReporter.ts"
+]

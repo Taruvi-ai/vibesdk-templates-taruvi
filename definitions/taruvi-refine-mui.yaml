@@ -1,0 +1,125 @@
+name: taruvi-refine-mui
+description: 'Refine v5 + Material UI + TaruviBase (BaaS) template for data-driven
+  business apps: CRUD, auth, Cerbos access control, storage, and serverless functions
+  via @taruvi/refine-providers'
+base_reference: vite-reference
+projectType: app
+disabled: false
+inherit_dependencies: false
+package_patches:
+  name: taruvi-refine-mui
+  dependencies:
+    '@dnd-kit/core': ^6.3.1
+    '@dnd-kit/sortable': ^10.0.0
+    '@dnd-kit/utilities': ^3.2.2
+    '@emotion/react': ^11.14.0
+    '@emotion/styled': ^11.14.1
+    '@fortawesome/fontawesome-svg-core': ^6.7.2
+    '@fortawesome/free-regular-svg-icons': ^6.7.2
+    '@fortawesome/free-solid-svg-icons': ^6.7.2
+    '@fortawesome/react-fontawesome': ^0.2.6
+    '@mui/icons-material': ^7.3.7
+    '@mui/lab': ^7.0.0-beta.9
+    '@mui/material': ^7.3.7
+    '@mui/x-data-grid': ^7.23.5
+    '@refinedev/core': ^5.0.0
+    '@refinedev/kbar': ^2.0.0
+    '@refinedev/mui': ^7.0.0
+    '@refinedev/react-hook-form': ^5.0.0
+    '@refinedev/react-router': ^2.0.0
+    '@taruvi/navkit': latest
+    '@taruvi/refine-providers': ^1.3.0
+    '@taruvi/sdk': latest
+    hoist-non-react-statics: ^3.3.2
+    hono: ^4.9.8
+    pino: ^9.11.0
+    react: ^19.1.0
+    react-dom: ^19.1.0
+    react-hook-form: ^7.57.0
+    react-router: ^7.0.2
+    recharts: ^3.6.0
+    wrangler: ^4.39.0
+  devDependencies:
+    '@cloudflare/vite-plugin': 1.17.1
+    '@cloudflare/workers-types': ^4.20250424.0
+    '@eslint/js': ^9.25.0
+    '@types/node': ^22.15.3
+    '@types/react': ^19.1.0
+    '@types/react-dom': ^19.1.0
+    '@typescript-eslint/eslint-plugin': ^8.57.2
+    '@typescript-eslint/parser': ^8.57.2
+    '@vitejs/plugin-react': ^4.4.1
+    eslint: ^9.25.0
+    eslint-plugin-react-hooks: ^5.2.0
+    eslint-plugin-react-refresh: ^0.4.19
+    globals: ^16.0.0
+    typescript: ^5.8.3
+    typescript-eslint: ^8.30.1
+    vite: ^6.3.5
+excludes:
+- src/App.css
+- src/assets/Cloudflare_Logo.svg
+- src/assets/react.svg
+- src/components/ErrorFallback.tsx
+- src/components/RouteErrorBoundary.tsx
+- src/components/TemplateDemo.tsx
+- src/components/ThemeToggle.tsx
+- src/components/app-sidebar.tsx
+- src/components/layout/AppLayout.tsx
+- src/components/ui/accordion.tsx
+- src/components/ui/alert-dialog.tsx
+- src/components/ui/alert.tsx
+- src/components/ui/aspect-ratio.tsx
+- src/components/ui/avatar.tsx
+- src/components/ui/badge.tsx
+- src/components/ui/breadcrumb.tsx
+- src/components/ui/button.tsx
+- src/components/ui/calendar.tsx
+- src/components/ui/card.tsx
+- src/components/ui/carousel.tsx
+- src/components/ui/chart.tsx
+- src/components/ui/checkbox.tsx
+- src/components/ui/collapsible.tsx
+- src/components/ui/command.tsx
+- src/components/ui/context-menu.tsx
+- src/components/ui/dialog.tsx
+- src/components/ui/drawer.tsx
+- src/components/ui/dropdown-menu.tsx
+- src/components/ui/form.tsx
+- src/components/ui/hover-card.tsx
+- src/components/ui/input-otp.tsx
+- src/components/ui/input.tsx
+- src/components/ui/label.tsx
+- src/components/ui/menubar.tsx
+- src/components/ui/navigation-menu.tsx
+- src/components/ui/pagination.tsx
+- src/components/ui/popover.tsx
+- src/components/ui/progress.tsx
+- src/components/ui/radio-group.tsx
+- src/components/ui/resizable.tsx
+- src/components/ui/scroll-area.tsx
+- src/components/ui/select.tsx
+- src/components/ui/separator.tsx
+- src/components/ui/sheet.tsx
+- src/components/ui/sidebar.tsx
+- src/components/ui/skeleton.tsx
+- src/components/ui/slider.tsx
+- src/components/ui/sonner.tsx
+- src/components/ui/switch.tsx
+- src/components/ui/table.tsx
+- src/components/ui/tabs.tsx
+- src/components/ui/textarea.tsx
+- src/components/ui/toggle-group.tsx
+- src/components/ui/toggle.tsx
+- src/components/ui/tooltip.tsx
+- src/hooks/use-mobile.tsx
+- src/hooks/use-theme.ts
+- src/index.css
+- src/lib/errorReporter.ts
+- src/lib/utils.ts
+- src/main.tsx
+- src/pages/HomePage.tsx
+- tailwind.config.js
+- postcss.config.js
+- components.json
+- public/vite.svg

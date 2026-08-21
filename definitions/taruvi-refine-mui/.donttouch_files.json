@@ -1,0 +1,14 @@
+[
+  "wrangler.jsonc",
+  "wrangler.toml",
+  "package.json",
+  ".redacted_files.json",
+  ".donttouch_files.json",
+  ".important_files.json",
+  ".dev.vars",
+  ".env",
+  "worker/index.ts",
+  "src/taruviClient.ts",
+  "vite.config.ts",
+  "themeOptions.ts"
+]
