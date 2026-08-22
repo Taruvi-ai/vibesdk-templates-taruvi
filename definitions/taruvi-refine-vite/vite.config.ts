@@ -183,6 +183,13 @@ export default defineConfig(({ mode }) => {
       __TARUVI_APP_TITLE__: JSON.stringify(env.TARUVI_APP_TITLE ?? ""),
     },
     plugins: [react(), createClientLogPlugin()],
+    server: {
+      // The platform's container preview proxy does not forward the HMR
+      // websocket; leaving HMR on floods the console with connection errors
+      // on every preview load. Local dev (no CONTAINER_ENV) keeps HMR.
+      hmr: process.env.CONTAINER_ENV ? false : undefined,
+      allowedHosts: true,
+    },
     optimizeDeps: {
       include: [
         "@emotion/react",

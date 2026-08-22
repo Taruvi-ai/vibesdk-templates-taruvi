@@ -1,3 +1,8 @@
+// Run from a workspace with the pinned deps installed — the committed
+// manifest is tools/vendor-workspace/package.json (`bun install` there, then
+// `node ../build-vendor.mjs`). Copy out/vendor -> the template's
+// public/vendor and keep public/index.html's import map in sync with
+// out/importmap.json.
 import { build } from "esbuild";
 import { createRequire } from "node:module";
 const requireCjs = createRequire(import.meta.url);
