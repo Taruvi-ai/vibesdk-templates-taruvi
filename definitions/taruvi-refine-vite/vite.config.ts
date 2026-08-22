@@ -191,12 +191,33 @@ export default defineConfig(({ mode }) => {
       allowedHosts: true,
     },
     optimizeDeps: {
+      // Crawl the whole source tree at server start so EVERY dependency —
+      // including per-icon deep imports like @mui/icons-material/AddRounded —
+      // is discovered and optimized in one pass before the first request.
+      // Without this, deps discovered mid-session trigger re-optimization
+      // that bumps the dep hash; the preview proxy drops vite's HMR
+      // websocket, so the browser is never told to reload and hangs on
+      // 504 "Outdated Optimize Dep" responses.
+      entries: ["index.html", "src/**/*.{ts,tsx}"],
       include: [
         "@emotion/react",
         "@emotion/styled",
         "hoist-non-react-statics",
         "prop-types",
-        "react-is"
+        "react-is",
+        "react",
+        "react-dom/client",
+        "react-router",
+        "react-hook-form",
+        "axios",
+        "@mui/material",
+        "@refinedev/core",
+        "@refinedev/mui",
+        "@refinedev/kbar",
+        "@refinedev/react-router",
+        "@refinedev/react-hook-form",
+        "@taruvi/sdk",
+        "@taruvi/refine-providers"
       ],
       esbuildOptions: {
         target: "esnext"
