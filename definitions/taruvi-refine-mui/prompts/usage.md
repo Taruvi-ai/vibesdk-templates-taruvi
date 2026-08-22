@@ -38,7 +38,7 @@ Non-negotiable rules:
 - Renames: `metaData`→`meta`, `sorter`→`sorters`, mutation `isLoading`→`isPending`, `hasPagination:false`→`pagination:{mode:"off"}`.
 
 ### UI
-- MUI components only (theme overrides already applied via `taruviTokens` in `src/theme/themeOptions.ts`); icons come from the FontAwesome-backed shim in `src/components/icons.tsx` (never add `@mui/icons-material`); keep the existing shell (`src/components/sidenav`), never build a parallel layout.
+- MUI components only (theme overrides already applied via `taruviTokens` in `themeOptions.ts`); icons come from the vendored `@mui/icons-material` catalog — root named imports of real MUI icon names, prefer `*Rounded` variants; keep the existing shell (`src/components/sidenav`), never build a parallel layout.
 - User feedback goes through the existing Refine notification provider (`useNotificationProvider` from `@refinedev/mui`) — no custom toasts/snackbars.
 - Recharts is available for charts.
 

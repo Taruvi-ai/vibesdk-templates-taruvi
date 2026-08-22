@@ -2,11 +2,14 @@
   "package.json",
   "wrangler.json",
   "worker/index.ts",
+  "AGENTS.md",
+  "UI_Guidelines.md",
+  "themeOptions.ts",
   "src/App.tsx",
   "src/index.tsx",
   "src/taruviClient.ts",
   "src/providers/refineProviders.ts",
-  "src/components/icons.tsx",
+  "src/components/ListPageShell.tsx",
   "src/pages/",
   "public/index.html"
 ]

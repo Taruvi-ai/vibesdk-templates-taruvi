@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!--
+  LOCAL DEVELOPMENT entry only (npm run dev / vite). The platform serves
+  public/index.html with the vendor import map instead; vite resolves the same
+  bare imports from node_modules, so no import map is needed here.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1E88E5" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>Taruvi Refine App (dev)</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <div id="console-log-drawer-root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>

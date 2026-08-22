@@ -1,393 +1,145 @@
-# AGENTS.md - AI Assistant Guide for Taruvi Refine Template
-
-## Functional App Default
-
-If the user asks to create or build an app, default to a functional, production-ready app — not a mockup, not a demo, not an MVP.
-
-A functional app in this repo means:
-- create Taruvi schema with MCP tools
-- seed enough real data to use the app
-- register Refine resources in `src/App.tsx`
-- build real list/create/edit/show flows for core resources
-- wire dashboards/pages to live data, automatically calculated from the system's data and kept up to date — never hardcoded or demo values
-
-If the user wants a UI-only prototype, they must explicitly say so.
-
-## Project Overview
-
-This is a **Refine.dev v5** project - a React-based framework for building admin panels, dashboards, and internal tools.
-
-**CRITICAL:** This project uses **Refine v5** which has significantly different hook syntax from v4. Always use the v5 patterns documented in the "[IMPORTANT: Refine v5 Syntax Changes](#important-refine-v5-syntax-changes)" section below.
-
-**CRITICAL:** Even if the user asks for plain HTML, CSS, or JavaScript — always use React, Refine v5 hooks, MUI components, and TypeScript. Do not build outside the framework.
-
-**When confused or need clarification:** read the relevant skill (`activate_skill`) and its references before changing code.
-
-## Pre-Work Checklist
-
-### Before Starting Any Task:
-
-1. **Create a Project Spec Document** - Run exploration, document resources/providers/auth flow, identify dependencies, map affected files
-2. **Read Relevant Files** - Always use Read tool before editing, check existing patterns
-3. **Plan with TodoWrite** - Break down complex tasks into steps, track progress
-
-### Notification Rule
-
-- Use the app's existing Refine notification integration via `useNotificationProvider` from `@refinedev/mui`
-- Do not create custom notification systems, ad hoc snackbars, or alternate toast providers when implementing feedback
-- When adding success/error feedback, wire it through the existing notification provider already configured in `/src/App.tsx`
-
-### Browser errors → `logs/frontend.ndjson`
-
-When the user reports a browser problem, read `logs/frontend.ndjson` instead of asking them to open DevTools. It's NDJSON — one event per line with `timestamp`, `source`, `text`, `session_id`, and for network errors `method`/`url`/`status`. Secrets are redacted server-side.
-
-After shipping a fix, truncate before asking the user to re-test so the next reproduction is unambiguous: `: > logs/frontend.ndjson`.
-
-If the file is missing, no errors have been captured yet — ask the user to reproduce the issue once, then re-read.
-
-## Mandatory UI / Design System Preflight
-
-For any task that **renders, styles, or restyles UI** — new pages, layouts, forms, tables, charts, status badges, colors, typography, spacing, theme work, MUI overrides, or any "make it look like X" request:
-
-1. Activate the platform skills first: `taruvi-app-developer` (backend/schema/policies via the `tool_taruvi_*` MCP tools), `taruvi-refine-providers` (Refine wiring), and `taruvibase-platform` (how credentials and the runtime work here).
-3. Follow its Step 4 to load all relevant module skills before writing any code.
-
-Do not implement from memory. Do not treat prior knowledge as sufficient. If these files are unavailable, stop and say so.
-
-### User Data Access Rule (Mandatory)
-- Taruvi platform already provides built-in user management (users, roles, auth).
-- Never create custom user/auth datatables (for example: `users`, `auth_users`, `user_roles`, `passwords`, `sessions`) to replace platform identity.
-- Never access `auth_user` through datatable routes from frontend code (for example `datatables/auth_user/data`).
-- Never use `resource: "auth_user"` in Refine hooks/components.
-- Always access users via the `user` provider (`dataProviderName: "user"`, with `resource: "users"`).
-- Manage users/roles through the dedicated user/app APIs and MCP tools (`list_users`, `create_user`, `update_user`, `manage_roles`, `manage_role_assignments`) — not manual SQL CRUD on identity data.
-- If user identity data is not available to the current role, degrade gracefully in UI (no crashing/spammy retries).
-
-## IMPORTANT: Refine v5 Syntax Changes
-
-**This project uses Refine v5** - Hook syntax has changed significantly from v4.
-
-### Critical Hook Return Value Changes
-
-#### Data Hooks (useList, useOne, useMany, useShow, useInfiniteList)
-
-```typescript
-// ❌ WRONG (v4)
-const { data, isLoading, isError } = useList({ resource: "posts" });
-const posts = data.data;
-
-// ✅ CORRECT (v5)
-const { result, query: { isLoading, isError } } = useList({ resource: "posts" });
-const posts = result.data;
-```
-
-**useOne/useMany/useShow - Simplified result:**
-```typescript
-// ❌ v4: const { data } = useOne(...); const user = data.data;
-// ✅ v5:
-const { result, query: { isLoading } } = useOne({ resource: "users", id: 1 });
-const user = result;  // No need for .data
-```
-
-**useInfiniteList:**
-```typescript
-// ✅ v5:
-const { result, query: { fetchNextPage, isLoading } } = useInfiniteList();
-const posts = result.data;
-```
-
-#### Mutation Hooks (useCreate, useUpdate, useDelete, useUpdateMany, useDeleteMany)
-
-```typescript
-// ❌ v4: const { isPending, isError, mutate } = useUpdate();
-// ✅ v5:
-const { mutation: { isPending, isError }, mutate } = useUpdate();
-```
-
-#### Table Hooks (useDataGrid, useTable, useSimpleList)
-
-```typescript
-// ❌ v4: const { tableQueryResult, setCurrent, current } = useDataGrid();
-// ✅ v5:
-const { dataGridProps, tableQuery, result } = useDataGrid({ resource: "blog_posts" });
-```
-
-### Parameter Name Changes
-
-| ❌ Old (v4) | ✅ New (v5) |
-|------------|------------|
-| `metaData` | `meta` |
-| `sorter` or `sort` | `sorters` |
-| `hasPagination: false` | `pagination: { mode: "off" }` |
-| `initialCurrent` | `pagination: { currentPage: 1 }` |
-| `initialPageSize` | `pagination: { pageSize: 20 }` |
-| `isLoading` (mutations) | `isPending` |
-| `useResource("posts")` | `useResourceParams({ resource: "posts" })` |
-| `ignoreAccessControlProvider` | `accessControl={{ enabled: false }}` |
-| `options: { label: "..." }` | `meta: { label: "..." }` |
-
-## Refine.dev Patterns
-
-### Resource Structure
-
-```
-/src/pages/{resource}/
-├── list.tsx     - Table view with pagination, sorting, filters
-├── create.tsx   - Form to create new records
-├── edit.tsx     - Form to update existing records
-├── show.tsx     - Read-only detail view
-└── index.ts     - Barrel export
-```
-
-**Resource Registration:**
-```typescript
-resources={[{
-  name: "categories",           // Database table name
-  list: "/categories",
-  create: "/categories/create",
-  edit: "/categories/edit/:id",
-  show: "/categories/show/:id",
-  meta: { canDelete: true, label: "Categories", icon: <CategoryIcon /> },
-}]}
-```
-
-### Common Refine Hooks (v5 Syntax)
-
-| Hook | Purpose | v5 Returns |
-|------|---------|---------|
-| `useDataGrid` | List view with MUI DataGrid | `dataGridProps`, `tableQuery`, `result` |
-| `useForm` | Form handling (create/edit) | `saveButtonProps`, `register`, `control`, `refineCore` |
-| `useShow` | Fetch single record for display | `result`, `query: { isLoading, isError }` |
-| `useOne` | Fetch related single record | `result`, `query: { isLoading, isError }` |
-| `useMany` | Fetch multiple related records | `result`, `query: { isLoading, isError }` |
-| `useList` | Fetch list of records | `result`, `query: { isLoading, isError }` |
-| `useCreate` | Create mutation | `mutate`, `mutation: { isPending, isError }` |
-| `useUpdate` | Update mutation | `mutate`, `mutation: { isPending, isError }` |
-| `useDelete` | Delete mutation | `mutate`, `mutation: { isPending, isError }` |
-| `useGetIdentity` | Current user info | `data` (user object), `isLoading` |
-| `useLogin` / `useLogout` | Auth mutations | `mutate`, `isLoading` |
-| `useGo` | Navigation (replaces useNavigation) | `go` function |
-
-### Relationship Handling
-
-**One-to-Many (edit form with autocomplete):**
-```typescript
-<Controller control={control} name="category_id"
-  render={({ field }) => (
-    <Autocomplete {...autocompleteProps} {...field}
-      onChange={(_, value) => field.onChange(value?.id)}
-      getOptionLabel={(item) => item.title}
-      renderInput={(params) => (
-        <TextField {...params} label="Category" error={!!(errors as any)?.category_id} />
-      )}
-    />
-  )}
-/>
-```
-
-**Fetching Related Data (v5):**
-```typescript
-const { result: blogPost, query: { isLoading } } = useShow({ resource: "blog_posts" });
-const { result: category, query: { isLoading: categoryLoading } } = useOne({
-  resource: "categories",
-  id: blogPost?.category_id,
-  queryOptions: { enabled: !!blogPost?.category_id },
-});
-// blogPost and category are direct objects, no need for .data
-```
-
-### Auth, Settings, and Input Safety
-
-- Taruvi auth is redirect-based. Keep `/login` wired to `LoginRedirect`; do not replace it with a local `AuthPage` form.
-- Keep protected Taruvi queries behind auth. App-wide settings/nav/theme fetches must skip protected API calls until a session token exists or live inside an authenticated route boundary.
-- For forms, normalize nullable API values before passing them to MUI inputs (`value={field.value ?? ""}`, boolean `checked`) to avoid uncontrolled/controlled warnings.
-
-### Stable Query Inputs
-
-When building lists, dashboards, or any data-driven page, keep query inputs stable across renders:
-
-- memoize `filters`, `sorters`, `meta`, and other query objects when they are derived in component scope
-- avoid inline `new Date()`, `Date.now()`, `Math.random()`, or freshly created arrays/objects inside hook arguments
-- if a cutoff time or default date range is needed, compute it once with `useMemo` or a top-level constant
-- if a query refetches repeatedly without user input, inspect the hook arguments first before blaming the provider
-
-This matters most for `useList`, `useDataGrid`, and `useMany`, because unstable arguments change the query key and can cause repeated datatable requests.
-
-## Environment Configuration
-
-```env
-# .env.local
-TARUVI_SITE_URL=http://tenant1.127.0.0.1.nip.io:8000
-TARUVI_API_KEY=secret
-TARUVI_APP_SLUG=sample-app
-```
-
-```typescript
-// src/taruviClient.ts
-import { Client } from "@taruvi/sdk";
-export const taruviClient = new Client({
-  // Loaded at runtime from ./api/taruvi-config (non-secret). The apiKey field
-  // is required by the constructor but never transmitted; auth is per-user
-  // session tokens. There is NO credential anywhere in this project.
-  apiUrl: runtimeConfig.siteUrl,
-  apiKey: "browser",
-  appSlug: runtimeConfig.appSlug,
-});
-// Used by all providers. Direct SDK: taruviClient.httpClient.get("api/...");
-```
-
-## Project-Specific Notes
-
-### Homepage / Dashboard
-
-**Current State:** Simple "Hello" page at `/src/pages/home/index.tsx`, set as index route.
-
-**When building a new app:** Replace homepage with an analytics dashboard showing key metrics.
-
-## Quick Reference
-
-**File Paths:** App: `/src/App.tsx` | Providers: `/src/providers/refineProviders.ts` | Client: `/src/taruviClient.ts` | Pages: `/src/pages/{resource}/` | Components: `/src/components/` | Server: `/worker/index.ts` (the `App` Durable Object)
-
-**No top nav bar:** `@taruvi/navkit` is not bundleable on this platform (it ships raw source with `.svg` imports); the sidenav owns navigation and logout.
-
-**Dependencies — two tiers:**
-
-- **Vendor tier (already provided):** react, react-dom, MUI (`@mui/material`,
-  `@mui/system`, `@mui/lab`, **`@mui/x-data-grid`**, **`@mui/icons-material`
-  — the full icon catalog**), **`recharts`**, emotion, all `@refinedev/*`,
-  react-router, react-hook-form, `@taruvi/sdk`, `@taruvi/refine-providers`,
-  and axios ship PREBUILT under `public/vendor/` and resolve via the import
-  map in `public/index.html` (they are the `peerDependencies` in
-  package.json). Import them normally — use `DataGrid`/`useDataGrid`,
-  recharts, and icons freely. Do not add them to `dependencies`, do not edit
-  `public/vendor/`, and never load a second copy of any of them another way
-  (duplicate React instances break hooks and theming).
-- **`dependencies` (for new packages):** anything else goes in package.json
-  `dependencies`, exactly pinned; the platform installs and bundles it at
-  deploy, leaving vendored packages external — so a library added here DOES
-  share the vendor React/MUI instances, PROVIDED it only imports package
-  roots (`from "react"`, `from "@mui/material"`). A package whose published
-  code deep-imports vendored subpaths (`@mui/material/Button` style) will
-  fail at runtime and belongs in the vendor build instead
-  (`tools/build-vendor.mjs` in the template repo — an operator step).
-- **Icons:** import named exports from the `@mui/icons-material` root —
-  `import { Delete, CheckCircle } from "@mui/icons-material"` — never deep
-  paths (`@mui/icons-material/Delete`). Use real MUI icon names (a wrong
-  name fails at page load with "does not provide an export named ...").
-  `@taruvi/navkit` remains unsupported.
-
-**Key Commands:**
-```bash
-There is no shell and no dev server. The platform builds and serves the app:
-call `deploy_space` after editing files, then `get_browser_console_logs` to
-verify. Client code is bundled from `src/index.tsx` (the `client` field in
-package.json) to `./index.js`, referenced by `public/index.html`.
-```
-
-**IMPORTANT - Development Server:**
-- Deploy with the `deploy_space` tool; never try to run npm/vite commands
-- Changes auto-trigger hot reload.
-- Only run build commands if explicitly requested
-
-**Documentation:** [Refine](https://refine.dev/docs) | [MUI DataGrid](https://mui.com/x/react-data-grid/) | [React Hook Form](https://react-hook-form.com/)
-
-## Troubleshooting Guide
-
-### Providers Not Working
-- Check `.env.local` has all required variables
-- Verify `taruviClient` is initialized in `/src/taruviClient.ts`
-- Confirm providers are exported from `/src/providers/refineProviders.ts`
-- Check network tab for API errors
-
-### Resource Not Appearing
-- Verify table exists using MCP `get_datatable_schema`
-- Check resource name matches database table name exactly
-- Ensure resource is registered in `App.tsx` resources array
-
-### Foreign Key Errors
-- Ensure referenced table exists first
-- Use correct field type (integer for IDs)
-- Verify reference syntax: `{ resource: "table_name", fields: "id" }`
-
-### Authentication Issues
-- Check if token is stored properly
-- Verify `authProvider.check()` is working
-- Test redirect flow with network tab open
-
-## Best Practices
-
-- **Code Organization:** One resource per directory in `/src/pages/`, barrel exports, reusable components in `/src/components/`
-- **Data Modeling:** Always define primary key, use foreign keys, add indexes for frequent queries
-- **Form Validation:** react-hook-form validation, schema constraints, clear error messages
-- **Performance:** `queryOptions.enabled` to prevent unnecessary fetches, pagination for large datasets, `useMany` over multiple `useOne`
-- **Security:** Never expose API keys in frontend, use env variables, validate permissions on backend
-
-
-## Remember
-
-1. **Always use Refine v5 syntax** - Check the v5 syntax section
-2. **Always read files before editing** - Use Read tool
-3. **Follow existing patterns** - Check similar components
-4. **Use TodoWrite for complex tasks** - Track progress
-5. **Read the skills when confused** - activate_skill + read_skill_resource
-6. **Create spec doc before starting** - Understand context
-7. **Test incrementally** - Don't make many changes at once
-8. **Validate schemas** - Use MCP tools to check table structure
-9. **Keep it simple** - Don't over-engineer
-10. **Use `meta` not `metaData`** - v5 renamed this
-11. **Use `result` and `query` destructuring** - v5 grouped return values
-12. **Leverage advanced query features** - aggregate, groupBy, having for analytics
-13. **Know your filter operators** - 20+ operators (eq, in, between, containss, etc.)
-14. **Storage provider uses `bucketName`** - Not `bucket` in meta
-15. **Use `dataProviderName`** - Specify which provider (storage, functions, app, user, analytics)
-16. **All 8 providers are configured** - See `/src/providers/refineProviders.ts`
-17. **Import types from refineProviders** - `import type { TaruviUser, TaruviMeta } from "./providers/refineProviders"`
-18. **Never query `auth_user` as a datatable** - Always use the `user` provider for user/role operations
-19. **Never build custom auth/user tables** - Use platform user management and role APIs instead of manual identity datatables
-
-This is a **Refine.dev v5 project** - leverage the framework's hooks and patterns rather than reinventing CRUD operations.
-
-For any UI/style/theme work, follow [`UI_Guidelines.md`](UI_Guidelines.md) and `taruviTokens` from [`themeOptions.ts`](themeOptions.ts) — see the "Mandatory UI / Design System Preflight" section near the top of this file for the full rules.
-
-## Frontend Deployment
-
-### Automated Deploy (via script)
-```bash
-Use the platform's publish flow; there is no npm deploy.
-```
-Prompts for site name, then builds, zips `dist/`, and uploads to Taruvi frontend workers API.
-
-### Manual Deploy (inside Docker)
-
-1. **Build:**
-   ```bash
-   ```
-
-2. **Zip the dist folder:**
-   ```bash
-   cd /app && zip -r dist.zip dist/
-   ```
-
-3. **Upload to Taruvi:**
-   ```bash
-   curl -X POST "https://api.taruvi.cloud/sites/${SITE_NAME}/api/cloud/frontend_workers/" \
-     -H "Authorization: Api-Key ${TARUVI_API_KEY}" \
-     -F "name=${TARUVI_APP_SLUG}" \
-     -F "is_internal=true" \
-     -F "file=@dist.zip;type=application/zip"
-   ```
-
-4. **Cleanup:**
-   ```bash
-   rm -f dist.zip
-   ```
-
-### Environment Variables Required
-- `TARUVI_API_KEY` — API key for authentication
-- `TARUVI_APP_SLUG` — App/worker name
-- `SITE_NAME` — Target site (e.g., inferred from `TARUVI_SITE_URL` hostname)
-
-### Build Notes (Docker)
-- `refine build` does NOT work inside the Docker container (symlinked node_modules)
-- The platform bundles with @cloudflare/worker-bundler; there is no Vite
-- Set `XDG_CONFIG_HOME=/tmp` if running refine CLI commands
+# AGENTS.md — Taruvi Refine Starter (Think platform)
+
+Authoritative build guidance for the AI agent working on this project. Follow
+it exactly; when it conflicts with a generic instinct, this file wins.
+
+## Functional app default
+
+If the user asks to build an app, default to a **functional, production-ready**
+app — not a mockup, demo, or MVP. That means: create the Taruvi schema, register
+Refine resources in `src/App.tsx`, build real list/create/edit/show flows, and
+wire dashboards to **live data** (computed from the system, never hardcoded).
+Only build a UI-only prototype if the user explicitly asks for one.
+
+This is a **Refine.dev v5** project (React admin/dashboard framework). Even if
+the user asks for plain HTML/CSS/JS, always use React + Refine v5 + MUI +
+TypeScript.
+
+## Plan before building
+
+**Clarify only what changes the shape of the build.** If the request doesn't
+say whether it needs role-based access control beyond default auth, scheduled
+jobs, external API integrations, or reporting beyond a simple filtered list,
+ask before planning — these decide whether the backend touches Cerbos
+policies, roles, functions, or analytics at all. Don't ask about things a
+sensible default covers (field types, layout, naming).
+
+**Write a short spec before building — save it to `docs/spec.md`.** List each
+resource, its fields/types/relations, provider `meta` (which
+`dataProviderName`, `bucketName`, function slugs), and the page list per
+resource (list / show / create-edit / dashboard). Do not skip this on a real
+build.
+
+**Scope to what this build needs.** Plain datatables + default auth are the
+baseline. Cerbos policies/custom roles only for multi-role access control
+(`accessControlProvider` ships commented out for a reason); functions only when
+the skill's decision criteria apply; analytics only if reporting was asked
+for. An unrequested policy or function is dead weight. When genuinely unsure,
+ask.
+
+## Mandatory Taruvi preflight
+
+For anything touching Taruvi, `@taruvi/sdk`, or `@taruvi/refine-providers`,
+**activate the relevant skill before writing code** — do not implement from
+memory:
+
+- **Backend** (schema, policies, roles/users, buckets, secrets, analytics,
+  functions): the `taruvi-app-developer` skill.
+- **Frontend** (Refine providers, hooks, list/dashboard/form UX, auth, access
+  control): the `taruvi-refine-providers` skill.
+
+The skills are the source of truth for **Refine v5 syntax**, provider `meta`
+options, hook return shapes, and production UX patterns. This file does not
+duplicate them — open the skill. Use the `tool_taruvi_*` MCP tools to inspect
+and change the backend schema; omit optional tool parameters entirely rather
+than passing null.
+
+## Mandatory UI / design-system preflight
+
+For anything that renders or styles UI:
+
+1. **Read [`UI_Guidelines.md`](UI_Guidelines.md) in full first** — it is short
+   and vendored at the project root; it resolves the design decisions the MUI
+   theme can't encode. If the file is missing, stop and tell the user.
+2. Import design tokens from [`themeOptions.ts`](themeOptions.ts)
+   (`taruviTokens`). **Never** hardcode brand hex values.
+3. Prefer plain MUI components — the theme already applies sizes, weights,
+   radii, padding, shadows, colors via overrides. Don't re-style with
+   `sx`/CSS.
+4. Use **`*Rounded`** icon variants:
+   `import { AddRounded, DeleteRounded } from "@mui/icons-material"` (the full
+   catalog is vendored — root named imports only, never deep paths, real MUI
+   icon names only).
+5. **Page anatomy is mandatory** (details in the guidelines): every list page
+   is built on [`ListPageShell`](src/components/ListPageShell.tsx) — never
+   hand-roll the list scaffold — with search + filters + active-filter chips +
+   server-side pagination + the 4 empty states; show pages need breadcrumb +
+   title + status chip + actions + meta + tabs-with-counts; destructive
+   actions need a confirmation dialog; never render a blank page during load.
+   Filters push into Refine's server-side `filters[]`, never React state.
+
+## User data access rule (mandatory)
+
+Taruvi provides built-in user management. **Never** create custom identity
+tables (`users`, `auth_users`, `user_roles`, `passwords`, `sessions`), never
+access `auth_user` via datatable routes, and never use `resource: "auth_user"`
+in Refine hooks. Always use the `user` provider (`dataProviderName: "user"`,
+`resource: "users"`) and the user/role MCP tools. If identity data isn't
+available to the current role, degrade gracefully in the UI.
+
+## How this platform runs the app
+
+- **No shell, no dev server.** The platform bundles `src/` from the `client`
+  field in package.json into `./index.js` (referenced by `public/index.html`)
+  and serves `public/` as static assets. After writing or editing files, call
+  `deploy_space`, then `get_browser_console_logs` to verify. A building turn
+  ends with a successful deploy and a clean console.
+- **The browser talks to Taruvi directly** with end-user session tokens. The
+  non-secret site URL and app slug come from `./api/taruvi-config`, served by
+  the `App` Durable Object (`worker/index.ts`) from platform-injected env.
+  The privileged `env.TARUVI_API_KEY` exists only server-side — never write
+  it into any file, never log it, never send it to the browser. Client-side
+  fetches to your own routes must be **relative** (`./api/...`).
+- **Auth is an in-app credential form** (`<AuthPage>` + the allauth-backed
+  provider in `src/providers/refineProviders.ts`). Do not replace it with a
+  redirect flow — the hosted login cannot render inside the preview iframe.
+  Keep protected Taruvi queries behind auth.
+- `src/polyfills.ts` must remain the FIRST import of `src/index.tsx`.
+- `this.ctx.storage` in the DO is for caches/ephemeral state only; durable
+  domain data belongs in Taruvi datatables.
+
+## Dependencies — two tiers
+
+- **Vendor tier (provided):** react, react-dom, MUI (`@mui/material`,
+  `@mui/system`, `@mui/lab`, `@mui/x-data-grid`, `@mui/icons-material` in
+  full), `recharts`, emotion, all `@refinedev/*`, react-router,
+  react-hook-form, `@taruvi/sdk`, `@taruvi/refine-providers`, axios — prebuilt
+  under `public/vendor/`, resolved by the import map in `public/index.html`
+  (they are the `peerDependencies`). Import them normally from package ROOTS.
+  Never add them to `dependencies`, never edit `public/vendor/`, never load a
+  second copy of any of them.
+- **`dependencies` (new packages):** anything else, exactly pinned; the
+  platform installs and bundles it at deploy. A library added here shares the
+  vendor React/MUI instances as long as it imports package roots only;
+  deep-importers of vendored subpaths belong in the vendor build (operator
+  step). `@taruvi/navkit` is unsupported.
+
+## Repo-specific rules
+
+- **Notifications:** use the existing `useNotificationProvider` from
+  `@refinedev/mui` (configured in `src/App.tsx`). No custom snackbars.
+- **Form inputs:** normalize nullable API values before passing to MUI
+  (`value={field.value ?? ""}`, boolean `checked`).
+- **Stable query inputs:** memoize `filters`/`sorters`/`meta`; no inline
+  `new Date()`/`Math.random()` in hook args.
+- **Resource dir layout:** `src/pages/{resource}/` with `list.tsx` ·
+  `create.tsx` · `edit.tsx` · `show.tsx` · `index.ts` barrel; register in
+  `src/App.tsx` with `name` = the datatable name.
+
+## Local development (humans, outside the platform)
+
+Clone the app, then: `npm install`, copy `.env.example` to `.env` (set
+`VITE_TARUVI_SITE_URL` + `VITE_TARUVI_APP_SLUG`), `npm run dev`. The vite
+toolchain lives in `devDependencies`, which the platform ignores — do not move
+anything from `devDependencies` to `dependencies` and do not import from
+`vite.config.ts` in app code.
