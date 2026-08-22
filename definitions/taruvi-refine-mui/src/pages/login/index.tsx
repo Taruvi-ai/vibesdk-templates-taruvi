@@ -1,5 +1,5 @@
-import { LoginRedirect } from "../../components/auth/LoginRedirect";
+import { AuthPage } from "@refinedev/mui";
 
 export const Login = () => {
-  return <LoginRedirect />;
+  return <AuthPage type="login" rememberMe={false} />;
 };

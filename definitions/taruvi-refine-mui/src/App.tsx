@@ -22,12 +22,13 @@ import {
   // taruviAccessControlProvider, // Uncomment to enable Cerbos-based access control
 } from "./providers/refineProviders";
 import { CustomSider, ErrorBoundary, UnsavedChangesDialog } from "./components";
-import { LoginRedirect } from "./components/auth/LoginRedirect";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
 import { useEffect } from "react";
 import { Home } from "./pages/home";
 import { Login } from "./pages/login";
+import { Register } from "./pages/register";
+import { ForgotPassword } from "./pages/forgotPassword";
 
 const AppContent = () => {
   const { settings } = useAppSettings();
@@ -75,12 +76,14 @@ const AppContent = () => {
                     }
                   >
                     <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                   </Route>
                   <Route
                     element={
                       <Authenticated
                         key="authenticated-inner"
-                        fallback={<LoginRedirect />}
+                        fallback={<Navigate to="/login" replace />}
                       >
                         <ThemedLayout
                           Header={() => null}
