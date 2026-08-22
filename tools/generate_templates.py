@@ -444,11 +444,31 @@ class TemplateGenerator:
             file_patches = config.get("file_patches", [])
             package_patches = config.get("package_patches", {})
             inherit_dependencies = config.get("inherit_dependencies", True)
+            self_contained = config.get("self_contained", False)
 
             log_info(f"Generating template: {template_name}")
 
             target_dir = self.build_dir / template_name
             reference_dir = self.reference_dir / base_reference
+
+            if self_contained:
+                # Self-contained template: the definition directory IS the
+                # template. No base reference, no package.json synthesis - the
+                # definition's own package.json is authoritative. Used by
+                # templates targeting the Think/SpaceDO platform, whose zips
+                # must match the definition byte-for-byte.
+                log_info(f"{template_name} is self-contained; copying definition directly")
+                if target_dir.exists():
+                    shutil.rmtree(target_dir)
+                definition_dir = self.definitions_dir / template_name
+                shutil.copytree(definition_dir, target_dir)
+                if excludes:
+                    self.apply_excludes(target_dir, excludes)
+                if file_patches:
+                    if not self.apply_file_patches(target_dir, file_patches):
+                        return False
+                log_info(f"✅ Successfully generated template: {template_name}")
+                return True
 
             # Step 1: Copy reference template
             if not self.copy_reference_template(base_reference, target_dir):

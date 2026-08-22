@@ -53,7 +53,11 @@ def is_valid_template(template_dir: Path) -> bool:
         True if the directory is a valid template, False otherwise
     """
     # Check for wrangler configuration file
-    if not (template_dir / "wrangler.jsonc").exists() and not (template_dir / "wrangler.toml").exists():
+    if (
+        not (template_dir / "wrangler.jsonc").exists()
+        and not (template_dir / "wrangler.json").exists()
+        and not (template_dir / "wrangler.toml").exists()
+    ):
         return False
     
     # Check for package.json
@@ -89,10 +93,16 @@ def extract_frameworks(package_json_path: Path) -> List[str]:
         log_warn(f"Could not parse {package_json_path}: {e}")
         return []
     
-    # Get all dependencies
+    # Get all dependencies (peerDependencies included: self-contained Think
+    # templates list their vendored framework packages there)
     dependencies = package_data.get('dependencies', {})
     dev_dependencies = package_data.get('devDependencies', {})
-    all_deps = list(dependencies.keys()) + list(dev_dependencies.keys())
+    peer_dependencies = package_data.get('peerDependencies', {})
+    all_deps = (
+        list(dependencies.keys())
+        + list(dev_dependencies.keys())
+        + list(peer_dependencies.keys())
+    )
     
     # Framework detection patterns
     framework_patterns = [
