@@ -113,16 +113,16 @@ available to the current role, degrade gracefully in the UI.
 - **Vendor tier (provided):** react, react-dom, MUI (`@mui/material`,
   `@mui/system`, `@mui/lab`, `@mui/x-data-grid`, `@mui/icons-material` in
   full), `recharts`, emotion, all `@refinedev/*`, react-router,
-  react-hook-form, `@taruvi/sdk`, `@taruvi/refine-providers`, axios — prebuilt
-  under `public/vendor/`, resolved by the import map in `public/index.html`
-  (they are the `peerDependencies`). Import them normally from package ROOTS.
-  Never add them to `dependencies`, never edit `public/vendor/`, never load a
-  second copy of any of them.
+  react-hook-form, `@taruvi/sdk`, `@taruvi/refine-providers`,
+  `@taruvi/navkit`, axios — prebuilt under `public/vendor/`, resolved by the
+  import map in `public/index.html` (they are the `peerDependencies`). Import
+  them normally from package ROOTS. Never add them to `dependencies`, never
+  edit `public/vendor/`, never load a second copy of any of them.
 - **`dependencies` (new packages):** anything else, exactly pinned; the
   platform installs and bundles it at deploy. A library added here shares the
   vendor React/MUI instances as long as it imports package roots only;
   deep-importers of vendored subpaths belong in the vendor build (operator
-  step). `@taruvi/navkit` is unsupported.
+  step).
 
 ## Repo-specific rules
 
@@ -135,6 +135,12 @@ available to the current role, degrade gracefully in the UI.
 - **Resource dir layout:** `src/pages/{resource}/` with `list.tsx` ·
   `create.tsx` · `edit.tsx` · `show.tsx` · `index.ts` barrel; register in
   `src/App.tsx` with `name` = the datatable name.
+- **Top navigation:** the Navkit bar (`<Navkit>` in `src/App.tsx`, vendored
+  `@taruvi/navkit`) owns branding, theme toggle, and the profile/logout menu
+  — never remove it or re-implement those. It keeps `--nav-height` in sync;
+  layout CSS depends on that variable. Extra profile-menu entries go in
+  `src/navkit/useNavkitProfileMenuItems.tsx`. The sidenav stays the place
+  for app navigation links.
 
 ## Local development (humans, outside the platform)
 

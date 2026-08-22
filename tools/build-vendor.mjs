@@ -26,8 +26,26 @@ const specifiers = [
   "@emotion/styled",
   "@taruvi/sdk",
   "@taruvi/refine-providers",
+  "@taruvi/navkit",
   "axios",
 ];
+
+// Packages whose live namespace cannot be enumerated in Node (raw .tsx source
+// dists). Export names are hand-listed; esbuild resolves the actual modules.
+const handExports = {
+  "@taruvi/navkit": {
+    lines: [
+      // npm 0.0.49 main (src/App.tsx) only exports default; the named API
+      // lives in src/NavkitContext.tsx. No "exports" field in package.json,
+      // so deep file imports resolve (esbuild default resolveExtensions
+      // includes .tsx).
+      `export { default } from "@taruvi/navkit";`,
+      `export { NavkitProvider, useNavigation, NavigationContext } from "@taruvi/navkit/src/NavkitContext";`,
+      // Convenience alias so \`import { Navkit } from "@taruvi/navkit"\` works too.
+      `export { default as Navkit } from "@taruvi/navkit";`,
+    ],
+  },
+};
 
 const entryName = (spec) => spec.replace(/^@/, "").replace(/[/]/g, "_");
 
@@ -39,6 +57,11 @@ const entryPoints = {};
 const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 for (const spec of specifiers) {
   const name = entryName(spec);
+  if (handExports[spec]) {
+    writeFileSync(`entries/${name}.js`, handExports[spec].lines.join("\n") + "\n");
+    entryPoints[name] = `entries/${name}.js`;
+    continue;
+  }
   // Enumerate the package's real export names with Node's own interop
   // (cjs-module-lexer): `export * from` a CJS module only surfaces `default`
   // under esbuild, which breaks `import { Component } from "react"` in the
@@ -97,8 +120,29 @@ for (const spec of specifiers) {
   console.log(`icons: ${iconNames.length} icons in ${chunkEntryNames.length} chunks`);
 }
 
+// navkit's NavkitContext.tsx does `import { version } from '../package.json'
+// with { type: 'json' }` — spec-compliant JSON modules only have a default
+// export, so esbuild errors on the named import. Stub the module.
+const navkitPkg = requireCjs("@taruvi/navkit/package.json");
+const navkitPkgJsonPlugin = {
+  name: "navkit-pkg-json",
+  setup(b) {
+    b.onResolve({ filter: /^\.\.\/package\.json$/ }, (args) => {
+      if (!/@taruvi[\\/]navkit[\\/]src/.test(args.importer)) return;
+      return { path: "navkit-pkg-json", namespace: "navkit-pkg" };
+    });
+    b.onLoad({ filter: /.*/, namespace: "navkit-pkg" }, () => ({
+      loader: "js",
+      contents:
+        `export const version = ${JSON.stringify(navkitPkg.version)};\n` +
+        `export default { version };\n`,
+    }));
+  },
+};
+
 const result = await build({
   entryPoints,
+  plugins: [navkitPkgJsonPlugin],
   outdir: "out/vendor",
   bundle: true,
   splitting: true,
@@ -109,6 +153,11 @@ const result = await build({
   logLevel: "warning",
   define: { "process.env.NODE_ENV": '"production"' },
   conditions: ["browser"],
+  // navkit ships raw .tsx source with image imports; inline assets as data
+  // URLs, and compile its JSX with the automatic runtime (classic would need
+  // a `React` binding its files don't import).
+  loader: { ".png": "dataurl", ".svg": "dataurl" },
+  jsx: "automatic",
 });
 writeFileSync("out/metafile.json", JSON.stringify(result.metafile));
 

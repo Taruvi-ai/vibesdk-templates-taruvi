@@ -7,6 +7,7 @@ import {
   ThemedLayout,
   useNotificationProvider,
 } from "@refinedev/mui";
+import Navkit from "@taruvi/navkit";
 import { Box } from "@mui/material";
 import { CssBaseline } from "@mui/material";
 import { GlobalStyles } from "@mui/material";
@@ -22,26 +23,47 @@ import {
   // taruviAccessControlProvider, // Uncomment to enable Cerbos-based access control
 } from "./providers/refineProviders";
 import { CustomSider, ErrorBoundary, UnsavedChangesDialog } from "./components";
-import { ColorModeContextProvider } from "./contexts/color-mode";
+import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mode";
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
-import { useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { Home } from "./pages/home";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { ForgotPassword } from "./pages/forgotPassword";
+import { useNavkitProfileMenuItems } from "./navkit/useNavkitProfileMenuItems";
 
 const AppContent = () => {
   const { settings } = useAppSettings();
+  const { setMode } = useContext(ColorModeContext);
+  const navRef = useRef<HTMLDivElement>(null);
+  const profileMenuItems = useNavkitProfileMenuItems();
 
-  // @taruvi/navkit cannot be bundled on this platform (it ships raw source with
-  // .svg imports), so there is no top nav bar; the sidenav owns navigation and
-  // logout. Layout CSS still reads --nav-height, so zero it explicitly.
+  // Layout CSS reads --nav-height; keep it in sync with the rendered Navkit bar.
   useEffect(() => {
-    document.documentElement.style.setProperty('--nav-height', '0px');
+    if (navRef.current) {
+      const height = navRef.current.offsetHeight;
+      document.documentElement.style.setProperty('--nav-height', `${height}px`);
+    }
   }, []);
 
   return (
     <>
+      <div
+        ref={navRef}
+        data-nav-container
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1300,
+          width: '100%',
+        }}
+      >
+        <Navkit
+          client={taruviClient}
+          getTheme={(theme) => setMode(theme)}
+          profileMenuItems={profileMenuItems}
+        />
+      </div>
       <RefineSnackbarProvider>
             
               <Refine
