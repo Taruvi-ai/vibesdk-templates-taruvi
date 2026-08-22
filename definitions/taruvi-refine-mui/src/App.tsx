@@ -113,9 +113,17 @@ const AppContent = () => {
   );
 };
 
+/**
+ * Previews are served under a path prefix (/space/<id>/preview/<branch>/);
+ * the router must treat that prefix as its root or every route 404s. Deployed
+ * apps serve from "/" and the match yields an empty basename.
+ */
+const routerBasename =
+  window.location.pathname.match(/^\/space\/[^/]+\/preview\/[^/]+/)?.[0] ?? "";
+
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename}>
       <RefineKbarProvider>
         <ColorModeContextProvider>
           <AppSettingsProvider>
