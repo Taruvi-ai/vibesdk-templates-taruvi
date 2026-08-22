@@ -7,10 +7,10 @@ import { Paper } from "@mui/material";
 import { Stack } from "@mui/material";
 import { Typography } from "@mui/material";
 import { alpha } from "@mui/material";
-import { ContentCopyRounded as ContentCopyRoundedIcon } from "./icons";
-import { CheckRounded as CheckRoundedIcon } from "./icons";
-import { RefreshRounded as RefreshRoundedIcon } from "./icons";
-import { ExpandMoreRounded as ExpandMoreRoundedIcon } from "./icons";
+import { ContentCopyRounded as ContentCopyRoundedIcon } from "@mui/icons-material";
+import { CheckRounded as CheckRoundedIcon } from "@mui/icons-material";
+import { RefreshRounded as RefreshRoundedIcon } from "@mui/icons-material";
+import { ExpandMoreRounded as ExpandMoreRoundedIcon } from "@mui/icons-material";
 import { reportError } from "../utils/clientLogger";
 
 type Props = {

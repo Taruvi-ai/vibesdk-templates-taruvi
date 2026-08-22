@@ -11,7 +11,7 @@ import { Snackbar } from "@mui/material";
 import { Stack } from "@mui/material";
 import { Tooltip } from "@mui/material";
 import { Typography } from "@mui/material";
-import { ContentCopyRounded as ContentCopyRoundedIcon } from "./icons";
+import { ContentCopyRounded as ContentCopyRoundedIcon } from "@mui/icons-material";
 import { getLastBoundaryAt, getSnapshot, subscribe, type LogEntry } from "../utils/clientLogger";
 
 const BOUNDARY_SUPPRESS_WINDOW_MS = 1500;

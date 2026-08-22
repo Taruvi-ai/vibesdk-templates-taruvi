@@ -4,9 +4,9 @@ import { ListItemIcon } from "@mui/material";
 import { ListItemText } from "@mui/material";
 import { Collapse } from "@mui/material";
 import { List } from "@mui/material";
-import { ExpandLess } from "../icons";
-import { ExpandMore } from "../icons";
-import { ListOutlined } from "../icons";
+import { ExpandLess } from "@mui/icons-material";
+import { ExpandMore } from "@mui/icons-material";
+import { ListOutlined } from "@mui/icons-material";
 import { CanAccess, type TreeMenuItem } from "@refinedev/core";
 import { getAclResource } from "../../utils/aclResource";
 

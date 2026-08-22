@@ -253,15 +253,15 @@ export const taruviClient = new Client({
 **Dependencies — two tiers:**
 
 - **Vendor tier (already provided):** react, react-dom, MUI (`@mui/material`,
-  `@mui/system`, `@mui/lab`, **`@mui/x-data-grid`**), **`recharts`**, emotion,
-  all `@refinedev/*`, react-router, react-hook-form, `@taruvi/sdk`,
-  `@taruvi/refine-providers`, axios, and the FontAwesome packages ship
-  PREBUILT under `public/vendor/` and resolve via the import map in
-  `public/index.html` (they are the `peerDependencies` in package.json).
-  Import them normally — use `DataGrid`/`useDataGrid` and recharts freely.
-  Do not add them to `dependencies`, do not edit `public/vendor/`, and never
-  load a second copy of any of them another way (duplicate React instances
-  break hooks and theming).
+  `@mui/system`, `@mui/lab`, **`@mui/x-data-grid`**, **`@mui/icons-material`
+  — the full icon catalog**), **`recharts`**, emotion, all `@refinedev/*`,
+  react-router, react-hook-form, `@taruvi/sdk`, `@taruvi/refine-providers`,
+  and axios ship PREBUILT under `public/vendor/` and resolve via the import
+  map in `public/index.html` (they are the `peerDependencies` in
+  package.json). Import them normally — use `DataGrid`/`useDataGrid`,
+  recharts, and icons freely. Do not add them to `dependencies`, do not edit
+  `public/vendor/`, and never load a second copy of any of them another way
+  (duplicate React instances break hooks and theming).
 - **`dependencies` (for new packages):** anything else goes in package.json
   `dependencies`, exactly pinned; the platform installs and bundles it at
   deploy, leaving vendored packages external — so a library added here DOES
@@ -270,8 +270,11 @@ export const taruviClient = new Client({
   code deep-imports vendored subpaths (`@mui/material/Button` style) will
   fail at runtime and belongs in the vendor build instead
   (`tools/build-vendor.mjs` in the template repo — an operator step).
-- For icons use the FontAwesome shim at `src/components/icons.tsx`;
-  `@mui/icons-material` and `@taruvi/navkit` remain unsupported.
+- **Icons:** import named exports from the `@mui/icons-material` root —
+  `import { Delete, CheckCircle } from "@mui/icons-material"` — never deep
+  paths (`@mui/icons-material/Delete`). Use real MUI icon names (a wrong
+  name fails at page load with "does not provide an export named ...").
+  `@taruvi/navkit` remains unsupported.
 
 **Key Commands:**
 ```bash
