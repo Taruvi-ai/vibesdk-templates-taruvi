@@ -1,0 +1,12 @@
+# Full-fidelity Vite edition of the Taruvi Refine starter, ported from
+# eoxvantage-com/taruvi-refine-template. Runs in the container sandbox
+# (runtime: sandbox -> phasic behavior) with a live vite dev server; the
+# definition directory IS the template (self_contained).
+name: taruvi-refine-vite
+description: 'Refine v5 + Material UI + TaruviBase Vite SPA with Navkit navigation
+  and hot-reload dev server, for data-driven business apps: CRUD, dashboards,
+  auth, access control via @taruvi/refine-providers'
+projectType: app
+disabled: false
+self_contained: true
+runtime: sandbox

@@ -19,6 +19,28 @@
     "slideDirectory": "public/slides"
   },
   {
+    "name": "taruvi-refine-vite",
+    "language": "typescript",
+    "frameworks": [
+      "@dnd-kit",
+      "@mui",
+      "emotion",
+      "lit",
+      "react",
+      "recharts",
+      "typescript",
+      "vite",
+      "wrangler"
+    ],
+    "projectType": "app",
+    "disabled": false,
+    "description": {
+      "selection": "## Template Selection – Taruvi Refine Vite\n\nUse this template when a user wants:\n- A **data-driven business app**: admin panel, dashboard, internal tool, CRM,\n  tracker, inventory, approvals, or any CRUD-centric application.\n- An app backed by **TaruviBase** (Taruvi Cloud) — datatables, end-user auth,\n  Cerbos role/policy-based access control, file storage buckets, and Python\n  serverless functions come from the connected Taruvi site; no custom backend\n  needs to be built.\n- Professional **Material UI** styling with the Taruvi design system, the\n  Navkit top navigation, Refine v5 resource routing, and a live Vite dev\n  server with hot reload.\n\nThis is the full-fidelity Vite edition of the Taruvi Refine starter: it runs\nin a sandboxed dev server with real npm dependencies and hot module reload.",
+      "usage": "## Using the Taruvi Refine Vite starter\n\nThis project is a Refine v5 + MUI + TypeScript Vite SPA wired to TaruviBase.\nThe dev server is already running with hot reload — do NOT run `npm run dev`,\n`npm install`, or build commands unless dependencies changed.\n\nNon-negotiables, enforced by `AGENTS.md` (read it first — it is authoritative):\n\n- **Functional app default**: real Taruvi schema + registered Refine\n  resources + live data. No mockups unless explicitly requested.\n- **Spec first**: write `docs/spec.md` (resources, fields, relations, provider\n  meta, page list) before building.\n- **UI preflight**: read `UI_Guidelines.md` in full before any UI work; import\n  design tokens (`taruviTokens`) from `themeOptions.ts`; never hardcode brand\n  hex values; use `*Rounded` icons from `@mui/icons-material`.\n- **Page anatomy**: every list page is built on\n  `src/components/ListPageShell.tsx` (never hand-roll the scaffold) with\n  search + server-side filters + active-filter chips + pagination + the 4\n  empty states; show pages carry breadcrumb + title + status chip + actions +\n  meta + tabs-with-counts; destructive actions get confirmation dialogs;\n  never render a blank page during load.\n- **User data**: only via the `user` provider and user/role tools — never\n  custom identity tables.\n- Taruvi config comes from `.env.local` (`TARUVI_SITE_URL`,\n  `TARUVI_APP_SLUG`) through Vite defines in `src/taruviClient.ts`. There is\n  no API key in the client and none may ever be added.\n- Browser errors stream to `logs/frontend.ndjson` — read it instead of asking\n  the user to open DevTools."
+    },
+    "runtime": "sandbox"
+  },
+  {
     "name": "c-code-react-runner",
     "language": "typescript",
     "frameworks": [
