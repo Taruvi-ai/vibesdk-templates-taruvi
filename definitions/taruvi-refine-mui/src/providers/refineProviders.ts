@@ -79,10 +79,14 @@ const PENDING_FLOW_MESSAGES: Record<string, string> = {
   mfa_authenticate: "This account requires two-factor authentication, which this app does not support yet.",
 };
 
-function allauthFailureMessage(body: AllauthBody | undefined, fallback: string): string {
-  const fieldError = body?.errors?.[0]?.message;
+function allauthFailureMessage(
+  errors: Array<{ message: string; param?: string }> | undefined,
+  flows: AllauthFlow[] | undefined,
+  fallback: string,
+): string {
+  const fieldError = errors?.[0]?.message;
   if (fieldError) return fieldError;
-  const pending = body?.data?.flows?.find((flow) => flow.is_pending);
+  const pending = flows?.find((flow) => flow.is_pending);
   if (pending) return PENDING_FLOW_MESSAGES[pending.id] ?? `Additional sign-in step required: ${pending.id}`;
   return fallback;
 }
@@ -93,17 +97,26 @@ async function allauthAuthenticate(
 ): Promise<{ ok: true } | { ok: false; message: string }> {
   const fallback = path === "login" ? "Invalid email or password." : "Could not create the account.";
   try {
-    const response = await taruviClient.httpClient.post(`_allauth/app/v1/auth/${path}`, payload);
-    const body = response.data as AllauthBody;
+    // The SDK's HttpClient returns the parsed response body directly (not an
+    // axios response), so this IS the allauth envelope.
+    const body = (await taruviClient.httpClient.post(
+      `_allauth/app/v1/auth/${path}`,
+      payload,
+    )) as AllauthBody;
     const token = body.meta?.session_token;
     if (token && body.meta?.is_authenticated !== false) {
       taruviClient.tokenClient.setTokens({ sessionToken: token });
       return { ok: true };
     }
-    return { ok: false, message: allauthFailureMessage(body, fallback) };
+    return { ok: false, message: allauthFailureMessage(body.errors, body.data?.flows, fallback) };
   } catch (error) {
-    const body = (error as { response?: { data?: AllauthBody } }).response?.data;
-    return { ok: false, message: allauthFailureMessage(body, fallback) };
+    // Non-2xx responses surface as TaruviError, which carries the allauth
+    // `errors` array and `data` (pending flows) verbatim.
+    const sdkError = error as {
+      errors?: Array<{ message: string; param?: string }>;
+      data?: { flows?: AllauthFlow[] };
+    };
+    return { ok: false, message: allauthFailureMessage(sdkError.errors, sdkError.data?.flows, fallback) };
   }
 }
 
