@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import IconButton from "@mui/material/IconButton";
-import Paper from "@mui/material/Paper";
-import Snackbar from "@mui/material/Snackbar";
-import Stack from "@mui/material/Stack";
-import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
+import { Alert } from "@mui/material";
+import { Box } from "@mui/material";
+import { Button } from "@mui/material";
+import { Dialog } from "@mui/material";
+import { DialogActions } from "@mui/material";
+import { DialogContent } from "@mui/material";
+import { IconButton } from "@mui/material";
+import { Paper } from "@mui/material";
+import { Snackbar } from "@mui/material";
+import { Stack } from "@mui/material";
+import { Tooltip } from "@mui/material";
+import { Typography } from "@mui/material";
 import { ContentCopyRounded as ContentCopyRoundedIcon } from "./icons";
 import { getLastBoundaryAt, getSnapshot, subscribe, type LogEntry } from "../utils/clientLogger";
 

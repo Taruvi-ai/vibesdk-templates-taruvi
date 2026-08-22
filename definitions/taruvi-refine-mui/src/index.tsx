@@ -1,3 +1,5 @@
+// MUST stay first: installs Node-global shims before any dependency evaluates.
+import "./polyfills";
 import React from "react";
 import { createRoot } from "react-dom/client";
 

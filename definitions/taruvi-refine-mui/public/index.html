@@ -21,6 +21,47 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <div id="console-log-drawer-root"></div>
+    <!--
+      Import map: prebuilt vendor bundles. All framework dependencies were
+      built ONCE with real esbuild (browser fields, exports maps, minification
+      all correct) and ship as static files under ./vendor/. The platform
+      bundles only this project's own src/ - packages listed in package.json
+      "peerDependencies" resolve here. React stays a singleton via shared
+      vendor chunks.
+      Do not hand-edit vendor files. To add a normal dependency, put it in
+      package.json "dependencies" (the platform bundles it). Only adding a
+      React-context-sharing component library requires regenerating vendor/
+      (scripts/build-vendor.mjs in the template repo).
+    -->
+    <script type="importmap">
+      {
+          "imports": {
+                    "react": "./vendor/react.js",
+                    "react-dom": "./vendor/react-dom.js",
+                    "react-dom/client": "./vendor/react-dom_client.js",
+                    "react/jsx-runtime": "./vendor/react_jsx-runtime.js",
+                    "react/jsx-dev-runtime": "./vendor/react_jsx-dev-runtime.js",
+                    "@mui/material": "./vendor/mui_material.js",
+                    "@mui/system": "./vendor/mui_system.js",
+                    "@mui/lab": "./vendor/mui_lab.js",
+                    "@refinedev/core": "./vendor/refinedev_core.js",
+                    "@refinedev/mui": "./vendor/refinedev_mui.js",
+                    "@refinedev/kbar": "./vendor/refinedev_kbar.js",
+                    "@refinedev/react-router": "./vendor/refinedev_react-router.js",
+                    "@refinedev/react-hook-form": "./vendor/refinedev_react-hook-form.js",
+                    "react-hook-form": "./vendor/react-hook-form.js",
+                    "react-router": "./vendor/react-router.js",
+                    "@emotion/react": "./vendor/emotion_react.js",
+                    "@emotion/styled": "./vendor/emotion_styled.js",
+                    "@taruvi/sdk": "./vendor/taruvi_sdk.js",
+                    "@taruvi/refine-providers": "./vendor/taruvi_refine-providers.js",
+                    "axios": "./vendor/axios.js",
+                    "@fortawesome/fontawesome-svg-core": "./vendor/fortawesome_fontawesome-svg-core.js",
+                    "@fortawesome/free-solid-svg-icons": "./vendor/fortawesome_free-solid-svg-icons.js",
+                    "@fortawesome/react-fontawesome": "./vendor/fortawesome_react-fontawesome.js"
+                }
+      }
+    </script>
     <script>
       (function () {
         function showFatalOverlay(message) {

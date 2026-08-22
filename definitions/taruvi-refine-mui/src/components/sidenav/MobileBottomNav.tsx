@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import Paper from "@mui/material/Paper";
-import BottomNavigation from "@mui/material/BottomNavigation";
-import BottomNavigationAction from "@mui/material/BottomNavigationAction";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
+import { Paper } from "@mui/material";
+import { BottomNavigation } from "@mui/material";
+import { BottomNavigationAction } from "@mui/material";
+import { Menu } from "@mui/material";
+import { MenuItem } from "@mui/material";
+import { ListItemIcon } from "@mui/material";
+import { ListItemText } from "@mui/material";
 import { Dashboard } from "../icons";
 import { Menu as MenuIcon } from "../icons";
 import { Logout } from "../icons";

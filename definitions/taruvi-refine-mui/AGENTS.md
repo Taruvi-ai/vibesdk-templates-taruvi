@@ -250,6 +250,26 @@ export const taruviClient = new Client({
 
 **No top nav bar:** `@taruvi/navkit` is not bundleable on this platform (it ships raw source with `.svg` imports); the sidenav owns navigation and logout.
 
+**Dependencies — two tiers:**
+
+- **Vendor tier (already provided):** react, react-dom, MUI (`@mui/material`,
+  `@mui/system`, `@mui/lab`), emotion, all `@refinedev/*`, react-router,
+  react-hook-form, `@taruvi/sdk`, `@taruvi/refine-providers`, axios, and the
+  FontAwesome packages ship PREBUILT under `public/vendor/` and resolve via
+  the import map in `public/index.html` (they are the `peerDependencies` in
+  package.json). Import them normally — do not add them to `dependencies`,
+  do not edit `public/vendor/`, and never load a second copy of any of them
+  another way (duplicate React instances break hooks and theming).
+- **`dependencies` (for new packages):** anything else the app needs goes in
+  package.json `dependencies`, exactly pinned; the platform installs and
+  bundles it at deploy. Fine for utility and data libraries. A React
+  COMPONENT library added here cannot share the vendor React context — if
+  one is truly needed, it belongs in the vendor build
+  (`tools/build-vendor.mjs` in the template repo), which is an operator step;
+  prefer composing from `@mui/material` instead.
+- For icons use the FontAwesome shim at `src/components/icons.tsx`;
+  `@mui/icons-material` and `@taruvi/navkit` remain unsupported.
+
 **Key Commands:**
 ```bash
 There is no shell and no dev server. The platform builds and serves the app:

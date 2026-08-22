@@ -7,9 +7,9 @@ import {
   ThemedLayout,
   useNotificationProvider,
 } from "@refinedev/mui";
-import Box from "@mui/material/Box";
-import CssBaseline from "@mui/material/CssBaseline";
-import GlobalStyles from "@mui/material/GlobalStyles";
+import { Box } from "@mui/material";
+import { CssBaseline } from "@mui/material";
+import { GlobalStyles } from "@mui/material";
 import routerProvider, { DocumentTitleHandler } from "@refinedev/react-router";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import { taruviClient } from "./taruviClient";

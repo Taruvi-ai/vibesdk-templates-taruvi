@@ -1,12 +1,12 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { UNSAFE_NavigationContext as NavigationContext, useLocation } from "react-router";
 import { useTranslate, useWarnAboutChange } from "@refinedev/core";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
+import { Dialog } from "@mui/material";
+import { DialogTitle } from "@mui/material";
+import { DialogContent } from "@mui/material";
+import { DialogContentText } from "@mui/material";
+import { DialogActions } from "@mui/material";
+import { Button } from "@mui/material";
 
 /**
  * Replaces Refine's UnsavedChangesNotifier with a MUI Dialog
