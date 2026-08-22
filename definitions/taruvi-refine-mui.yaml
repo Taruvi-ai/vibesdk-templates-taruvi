@@ -13,3 +13,4 @@ description: 'Refine v5 + Material UI + TaruviBase (BaaS) template for data-driv
 projectType: app
 disabled: false
 self_contained: true
+runtime: think

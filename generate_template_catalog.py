@@ -261,6 +261,7 @@ def read_template_metadata_from_yaml(template_name: str, definitions_dir: Path) 
     default_metadata = {
         'projectType': 'app',
         'disabled': False,
+        'runtime': None,
         'renderMode': None,
         'slideDirectory': None
     }
@@ -292,6 +293,7 @@ def read_template_metadata_from_yaml(template_name: str, definitions_dir: Path) 
         return {
             'projectType': project_type,
             'disabled': yaml_data.get('disabled', False),
+            'runtime': yaml_data.get('runtime'),
             'renderMode': render_mode,
             'slideDirectory': slide_directory
         }
@@ -343,6 +345,9 @@ def process_template(template_dir: Path, definitions_dir: Path) -> Dict[str, Any
 
     if metadata['slideDirectory'] is not None:
         template_data['slideDirectory'] = metadata['slideDirectory']
+
+    if metadata['runtime'] is not None:
+        template_data['runtime'] = metadata['runtime']
 
     return template_data
 
