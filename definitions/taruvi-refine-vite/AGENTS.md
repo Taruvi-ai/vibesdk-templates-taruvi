@@ -77,6 +77,10 @@ For anything that renders or styles UI:
 3. Prefer plain MUI components — the theme already applies sizes, weights, radii,
    padding, shadows, colors via overrides. Don't re-style with `sx`/CSS.
 4. Use **`*Rounded`** icon variants from `@mui/icons-material`.
+   **MUI v7 grid:** `Grid2` no longer exists — `import { Grid } from
+   "@mui/material"` is the grid, with `size={{ xs: 12, md: 6 }}` props. Never
+   import `@mui/material/Grid2`/`Unstable_Grid2`, and never install a package
+   subpath.
 5. **Page anatomy is mandatory** (details in the fetched guidelines + the
    frontend skill): list pages need search + filters + active-filter chips +
    server-side pagination + 4 empty states; show pages need breadcrumb + title +

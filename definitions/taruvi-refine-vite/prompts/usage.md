@@ -13,6 +13,10 @@ Non-negotiables, enforced by `AGENTS.md` (read it first — it is authoritative)
 - **UI preflight**: read `UI_Guidelines.md` in full before any UI work; import
   design tokens (`taruviTokens`) from `themeOptions.ts`; never hardcode brand
   hex values; use `*Rounded` icons from `@mui/icons-material`.
+- **MUI v7**: `Grid2` does not exist in v7 — `import { Grid } from
+  "@mui/material"` IS the new grid (`size={{ xs: 12, md: 6 }}` props). Never
+  import `@mui/material/Grid2` or `@mui/material/Unstable_Grid2`, and never
+  `bun install` a package SUBPATH — subpaths are not packages.
 - **Page anatomy**: every list page is built on
   `src/components/ListPageShell.tsx` (never hand-roll the scaffold) with
   search + server-side filters + active-filter chips + pagination + the 4
