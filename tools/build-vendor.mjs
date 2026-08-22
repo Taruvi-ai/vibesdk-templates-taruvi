@@ -12,6 +12,8 @@ const specifiers = [
   "react/jsx-dev-runtime",
   "@mui/material",
   "@mui/system",
+  "@mui/x-data-grid",
+  "recharts",
   "@mui/lab",
   "@refinedev/core",
   "@refinedev/mui",

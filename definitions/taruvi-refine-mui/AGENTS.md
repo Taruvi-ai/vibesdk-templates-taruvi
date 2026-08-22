@@ -253,20 +253,23 @@ export const taruviClient = new Client({
 **Dependencies — two tiers:**
 
 - **Vendor tier (already provided):** react, react-dom, MUI (`@mui/material`,
-  `@mui/system`, `@mui/lab`), emotion, all `@refinedev/*`, react-router,
-  react-hook-form, `@taruvi/sdk`, `@taruvi/refine-providers`, axios, and the
-  FontAwesome packages ship PREBUILT under `public/vendor/` and resolve via
-  the import map in `public/index.html` (they are the `peerDependencies` in
-  package.json). Import them normally — do not add them to `dependencies`,
-  do not edit `public/vendor/`, and never load a second copy of any of them
-  another way (duplicate React instances break hooks and theming).
-- **`dependencies` (for new packages):** anything else the app needs goes in
-  package.json `dependencies`, exactly pinned; the platform installs and
-  bundles it at deploy. Fine for utility and data libraries. A React
-  COMPONENT library added here cannot share the vendor React context — if
-  one is truly needed, it belongs in the vendor build
-  (`tools/build-vendor.mjs` in the template repo), which is an operator step;
-  prefer composing from `@mui/material` instead.
+  `@mui/system`, `@mui/lab`, **`@mui/x-data-grid`**), **`recharts`**, emotion,
+  all `@refinedev/*`, react-router, react-hook-form, `@taruvi/sdk`,
+  `@taruvi/refine-providers`, axios, and the FontAwesome packages ship
+  PREBUILT under `public/vendor/` and resolve via the import map in
+  `public/index.html` (they are the `peerDependencies` in package.json).
+  Import them normally — use `DataGrid`/`useDataGrid` and recharts freely.
+  Do not add them to `dependencies`, do not edit `public/vendor/`, and never
+  load a second copy of any of them another way (duplicate React instances
+  break hooks and theming).
+- **`dependencies` (for new packages):** anything else goes in package.json
+  `dependencies`, exactly pinned; the platform installs and bundles it at
+  deploy, leaving vendored packages external — so a library added here DOES
+  share the vendor React/MUI instances, PROVIDED it only imports package
+  roots (`from "react"`, `from "@mui/material"`). A package whose published
+  code deep-imports vendored subpaths (`@mui/material/Button` style) will
+  fail at runtime and belongs in the vendor build instead
+  (`tools/build-vendor.mjs` in the template repo — an operator step).
 - For icons use the FontAwesome shim at `src/components/icons.tsx`;
   `@mui/icons-material` and `@taruvi/navkit` remain unsupported.
 
