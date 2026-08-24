@@ -50,16 +50,18 @@ ask — don't default to yes.
 
 ## Mandatory Taruvi preflight
 
-For anything touching Taruvi, `@taruvi/sdk`, or `@taruvi/refine-providers`, **read
-the relevant skill before writing code** — do not implement from memory:
+For anything touching Taruvi, `@taruvi/sdk`, or `@taruvi/refine-providers`,
+**activate the relevant skill before writing code** — do not implement from
+memory. The platform injects a skill catalog; use the `activate_skill` tool:
 
 - **Backend** (schema, Cerbos policies, roles/users, buckets, secrets, analytics,
-  raw SQL, Python functions): `.agents/skills/taruvi-app-developer/SKILL.md`
+  raw SQL, Python functions): the `taruvi-app-developer` skill
 - **Frontend** (Refine providers, hooks, list/dashboard/form UX, auth, access
-  control): `.agents/skills/taruvi-refine-providers/SKILL.md`
+  control): the `taruvi-refine-providers` skill
 
-Each SKILL.md routes you to its module references. If the skill files are
-missing in this workspace, say so rather than improvising from memory.
+Each skill routes you to its module references via `read_skill_resource`. If
+the skills are unavailable in this environment, say so rather than improvising
+from memory.
 
 The skills are the source of truth for **Refine v5 syntax**, provider `meta`
 options, hook return shapes, and production UX patterns. Don't duplicate that here
