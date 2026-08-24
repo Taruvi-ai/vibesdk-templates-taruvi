@@ -1,8 +1,0 @@
-[
-  "wrangler.json",
-  ".redacted_files.json",
-  ".donttouch_files.json",
-  ".important_files.json",
-  "src/taruviClient.ts",
-  "themeOptions.ts"
-]

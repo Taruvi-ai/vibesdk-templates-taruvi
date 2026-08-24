@@ -12,7 +12,10 @@ Non-negotiables, enforced by `AGENTS.md` (read it first — it is authoritative)
   meta, page list) before building.
 - **UI preflight**: read `UI_Guidelines.md` in full before any UI work; import
   design tokens (`taruviTokens`) from `themeOptions.ts`; never hardcode brand
-  hex values; use `*Rounded` icons from `@mui/icons-material`.
+  hex values; icons come from `@mui/icons-material` `*Rounded` variants ONLY —
+  **never add or import `lucide-react`** (or heroicons, react-icons, or any
+  other icon package), and never list them in a blueprint's frameworks; this
+  overrides any generic icon-library suggestion.
 - **MUI v7**: `Grid2` does not exist in v7 — `import { Grid } from
   "@mui/material"` IS the new grid (`size={{ xs: 12, md: 6 }}` props). Never
   import `@mui/material/Grid2` or `@mui/material/Unstable_Grid2`, and never

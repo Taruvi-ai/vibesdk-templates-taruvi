@@ -15,33 +15,16 @@ variable at this repo and run `deploy_templates.sh` unchanged.
 
 ### The Taruvi template
 
-`taruvi-refine-mui` is the Taruvi template: **Refine v5 + React 19 + Material UI v7 + TaruviBase**.
+`taruvi-refine-vite` is the Taruvi template: **Refine v5 + Material UI v7 + TaruviBase**, a
+Vite SPA that runs in the container sandbox with a live dev server.
 
-- Definition YAML: `definitions/taruvi-refine-mui.yaml`
-- Overlay sources: `definitions/taruvi-refine-mui/`
-- Agent guidance: `definitions/taruvi-refine-mui/AGENTS.md` and `UI_Guidelines.md`
-- Env contract: `definitions/taruvi-refine-mui/.env.example` (placeholders only — never commit real values)
+- Definition YAML: `definitions/taruvi-refine-vite.yaml`
+- Sources (self-contained): `definitions/taruvi-refine-vite/`
+- Agent guidance: `definitions/taruvi-refine-vite/AGENTS.md` and `UI_Guidelines.md`
 
-### Bundled Taruvi skills
-
-The template ships agent skills inside the template itself, so the coding agent gets them as
-soon as the template is unpacked:
-
-```
-definitions/taruvi-refine-mui/.agents/skills/
-├── taruvi-app-developer/       # backend: datatables, schemas, Cerbos policies, buckets, functions
-└── taruvi-refine-providers/    # frontend: data/auth/access-control/storage providers, Refine v5 hooks
-```
-
-Each `SKILL.md` routes to deeper module docs under its own `references/` directory.
-`definitions/taruvi-refine-mui/skills-lock.json` pins the content hashes of the vendored copies.
-
-The canonical source for these skills is the `Taruvi-ai/taruvi-skills` repository. To install or
-refresh them:
-
-```bash
-npx skills add Taruvi-ai/taruvi-skills
-```
+The earlier `taruvi-refine-mui` template (vendored, SpaceDO-bundled, no Vite) was retired on
+2026-08-24; already-seeded apps keep working on the platform, but it is no longer offered as a
+choice or shipped in the catalog.
 
 ### How this reaches the platform
 
@@ -53,7 +36,7 @@ npx skills add Taruvi-ai/taruvi-skills
 4. `wrangler r2 object put` uploads `template_catalog.json` and every `zips/*.zip` to the
    **`vibesdk-templates` R2 bucket** (`R2_BUCKET_NAME`), where VibeSDK fetches them at runtime.
 
-`zips/taruvi-refine-mui.zip` and `template_catalog.json` are committed here because they are the
+`zips/taruvi-refine-vite.zip` and `template_catalog.json` are committed here because they are the
 live artifacts currently deployed to that bucket. Local rollback copies (`*.bak`) are gitignored.
 
 Set `R2_BUCKET_NAME=vibesdk-templates` (plus Cloudflare credentials) before running the deploy;
@@ -67,16 +50,15 @@ never place those credentials in a tracked file.
 
 ---
 
-### taruvi-refine-mui now targets the Think/SpaceDO platform
+### taruvi-refine-vite targets the buildathon platform's container sandbox
 
-As of 2026-08-21 the `taruvi-refine-mui` template is adapted for the current
-VibeSDK Think architecture (buildathon deployment): the server is a single
-`App extends DurableObject` entry, the client is bundled by
-`@cloudflare/worker-bundler` from the `client` field in package.json (no Vite),
-and no credential exists anywhere in the project - the browser SDK authenticates
-end users via sessions and receives the non-secret site/slug from
-`/api/taruvi-config`. The other 10 definitions still target the retired
-container pipeline and are kept for reference only.
+`taruvi-refine-vite` is self-contained (`self_contained: true`, `runtime:
+sandbox`): the definition directory IS the template, rendered verbatim with a
+live Vite dev server in the container. No credential exists anywhere in the
+project — the browser SDK authenticates end users via sessions, and the
+non-secret site/slug reach the client through env-driven Vite defines. The
+other definitions still target the retired upstream container pipeline and
+are kept for reference only.
 
 ## Repository Layout
 
