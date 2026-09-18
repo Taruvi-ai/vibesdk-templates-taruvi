@@ -7,6 +7,7 @@ import {
   accessControlProvider,
 } from "@taruvi/refine-providers";
 import { taruviClient } from "../taruviClient";
+import { ensureLoginRole } from "./ensureLoginRole";
 
 export type { UserData as TaruviUser } from "@taruvi/sdk";
 export type {
@@ -157,6 +158,14 @@ export const taruviAuthProvider: typeof packageAuthProvider = {
     return packageAuthProvider.register
       ? packageAuthProvider.register(params)
       : { success: false, error: { name: "RegisterError", message: "Registration is not available." } };
+  },
+  getIdentity: async () => {
+    const identity = await packageAuthProvider.getIdentity?.();
+    const email = (identity as { email?: string } | null | undefined)?.email;
+    // Assign the default role on first authenticated load, covering every
+    // sign-in path. Idempotent and fire-and-forget; never blocks identity.
+    ensureLoginRole(email);
+    return identity ?? null;
   },
 };
 
