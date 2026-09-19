@@ -35,7 +35,7 @@ import { useNavkitProfileMenuItems } from "./navkit/useNavkitProfileMenuItems";
 const AppContent = () => {
   const { setMode } = useContext(ColorModeContext);
   const navRef = useRef<HTMLDivElement>(null);
-  const { settings } = useAppSettings()
+  const { settings } = useAppSettings();
   const profileMenuItems = useNavkitProfileMenuItems();
 
   useEffect(() => {
