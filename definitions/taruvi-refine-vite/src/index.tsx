@@ -1,6 +1,14 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
+// Side-effect import, first so the console/network hooks are installed before
+// any other module can log. `clientLogger` auto-installs on load and streams
+// browser errors to the dev server's /__client_log middleware, which appends
+// them to logs/frontend.ndjson - the channel AGENTS.md tells the agent to read
+// instead of asking the user to open DevTools. Without this import the module
+// was never evaluated, so that file never existed and the agent read nothing.
+import "./utils/clientLogger";
+
 import App from "./App";
 import { ConsoleLogDrawer } from "./components/ConsoleLogDrawer";
 import { taruviClient } from "./taruviClient";

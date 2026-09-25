@@ -5,10 +5,16 @@ This document captures what the **Taruvi design system** specifies that the MUI 
 For pure tokens (colors, font sizes, radii, shadows, paddings, etc.) the single source of truth is [themeOptions.ts](themeOptions.ts) — import the `taruviTokens` object whenever you need a raw value.
 
 ```ts
-import { taruviTokens } from "@/../themeOptions";
-// or via the re-export:
-import { taruviTokens } from "@/theme/themeOptions";
+// From anywhere under src/, import the re-export with a RELATIVE path, e.g.
+// from src/pages/drivers/list.tsx:
+import { taruviTokens } from "../../theme/themeOptions";
 ```
+
+> This template has **no `@/` path alias** — there is no `resolve.alias` in
+> `vite.config.ts` and no `paths` in `tsconfig.json`. An `@/...` import will not
+> resolve, and the module it is in will fail to load, which blanks the page.
+> Always use a relative path to `src/theme/themeOptions`, and run
+> `bunx tsc -b --noEmit` to catch a wrong depth before deploying.
 
 ---
 

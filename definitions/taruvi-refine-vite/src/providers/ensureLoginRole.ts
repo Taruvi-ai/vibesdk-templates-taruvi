@@ -21,6 +21,22 @@ const FUNCTION_SLUG = "assign-user-role-on-login";
 
 let assigned = false;
 
+/**
+ * Run the assignment for a user whose email still has to be fetched.
+ *
+ * The session guard is checked BEFORE the resolver runs, so the extra identity
+ * round trip happens at most once per browser session rather than on every
+ * authenticated load.
+ */
+export function ensureLoginRoleWith(resolveEmail: () => Promise<string | undefined>): void {
+  if (assigned) return;
+  void resolveEmail()
+    .then((email) => ensureLoginRole(email))
+    .catch(() => {
+      /* identity unavailable; a later load retries */
+    });
+}
+
 export function ensureLoginRole(email: string | undefined): void {
   if (assigned) return;
   const target = (email ?? "").trim();
@@ -36,8 +52,35 @@ export function ensureLoginRole(email: string | undefined): void {
       async: false,
       params: { email: target },
     })
-    .catch(() => {
-      // Reset so a later authenticated load can retry a transient failure.
+    .catch((error: unknown) => {
+      const status = errorStatus(error);
+      // A missing or forbidden function is PERMANENT for this deployment: the
+      // platform provisions `assign-user-role-on-login` when it deploys an
+      // app, so a 404 means this app was never provisioned (or is running
+      // outside the platform). Retrying then produced one failed request on
+      // every authenticated page load, forever. Keep `assigned` set so it is
+      // attempted exactly once, and say why - loudly enough to be actionable,
+      // quietly enough not to break a working app.
+      if (status === 404 || status === 403 || status === 501) {
+        console.warn(
+          `[taruvi] Default-role assignment is unavailable: the "${FUNCTION_SLUG}" ` +
+            `function is not present in app "${appSlug}" (HTTP ${status}). New users will ` +
+            'not receive a role automatically, so their first write may be denied. ' +
+            'The platform provisions this function when it deploys the app - redeploy ' +
+            'from the builder, or create the function in the TaruviBase console.',
+        );
+        return;
+      }
+      // Anything else (offline, timeout, 5xx) may well succeed next time.
       assigned = false;
     });
+}
+
+/** HTTP status from an SDK/axios-style rejection, when there is one. */
+function errorStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const candidate = error as { status?: unknown; response?: { status?: unknown } };
+  if (typeof candidate.status === "number") return candidate.status;
+  if (typeof candidate.response?.status === "number") return candidate.response.status;
+  return undefined;
 }

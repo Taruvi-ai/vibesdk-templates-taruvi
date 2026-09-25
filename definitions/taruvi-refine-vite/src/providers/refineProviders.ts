@@ -7,7 +7,7 @@ import {
   accessControlProvider,
 } from "@taruvi/refine-providers";
 import { taruviClient } from "../taruviClient";
-import { ensureLoginRole } from "./ensureLoginRole";
+import { ensureLoginRole, ensureLoginRoleWith } from "./ensureLoginRole";
 
 export type { UserData as TaruviUser } from "@taruvi/sdk";
 export type {
@@ -130,6 +130,27 @@ const packageAuthProvider = authProvider(taruviClient);
 
 export const taruviAuthProvider: typeof packageAuthProvider = {
   ...packageAuthProvider,
+  /**
+   * Assign this app's default role on every authenticated load.
+   *
+   * `check` is the hook Refine actually runs - `<Authenticated>` calls it on
+   * each load, so it covers the in-app login form, the hosted-login redirect
+   * and the platform's adopted preview session alike. `getIdentity` below is
+   * NOT a reliable trigger: nothing in this template calls `useGetIdentity`,
+   * and its only library consumer (`@refinedev/mui`'s `ThemedHeader`) is
+   * disabled via `Header={() => null}` in App.tsx. Relying on it meant the
+   * role was never assigned, so every new user hit 403 on their first write.
+   */
+  check: async (...args: Parameters<NonNullable<typeof packageAuthProvider.check>>) => {
+    const result = await packageAuthProvider.check(...args);
+    if (result?.authenticated) {
+      ensureLoginRoleWith(async () => {
+        const identity = await packageAuthProvider.getIdentity?.();
+        return (identity as { email?: string } | null | undefined)?.email;
+      });
+    }
+    return result;
+  },
   login: async (params: CredentialParams = {}) => {
     const { email, username, password } = params;
     if (password && (email || username)) {
@@ -138,9 +159,15 @@ export const taruviAuthProvider: typeof packageAuthProvider = {
         ...(username ? { username } : {}),
         password,
       });
-      return result.ok
-        ? { success: true, redirectTo: "/" }
-        : { success: false, error: { name: "LoginError", message: result.message } };
+      if (result.ok) {
+        // Do not wait for the next `check` to come round: the user is about
+        // to land on a page that may write immediately. Only an email is
+        // usable here - the function looks the user up by email - so a
+        // username login falls through to `check`, which resolves identity.
+        if (email) ensureLoginRole(email);
+        return { success: true, redirectTo: "/" };
+      }
+      return { success: false, error: { name: "LoginError", message: result.message } };
     }
     return packageAuthProvider.login(params);
   },

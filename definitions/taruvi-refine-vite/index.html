@@ -52,8 +52,27 @@
         window.addEventListener('error', function (e) {
           showFatalOverlay((e.error ? (e.error.stack || e.error.message) : null) || e.message || String(e));
         });
+        // A failed request is not a fatal application error. Treating every
+        // rejection as fatal meant one unreachable endpoint (an expired
+        // session, a CORS refusal, an offline moment) painted a full-screen
+        // overlay over a working app. Network rejections go to the console,
+        // where the client logger and the build agent can still see them.
+        function isNetworkRejection(r) {
+          if (!r) return false;
+          var name = String(r.name || '');
+          var msg = String(r.message || r);
+          return (
+            name === 'NetworkError' ||
+            name === 'AbortError' ||
+            /Network Error|Failed to fetch|NetworkError|ERR_NETWORK|timeout of \d+ms exceeded/i.test(msg)
+          );
+        }
         window.addEventListener('unhandledrejection', function (e) {
           var r = e.reason;
+          if (isNetworkRejection(r)) {
+            console.error('[unhandled network rejection]', r);
+            return;
+          }
           showFatalOverlay(r ? (r.stack || r.message || String(r)) : 'Unhandled promise rejection');
         });
       })();
