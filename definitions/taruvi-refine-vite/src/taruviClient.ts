@@ -50,3 +50,18 @@ export const taruviClient = (() => {
     );
   }
 })();
+
+/**
+ * Send the app session only. The SDK's axios instance is created with
+ * `withCredentials: true`, so every API call also carried whatever cookie the
+ * browser held for the TaruviBase host - and a developer signed in to the
+ * TaruviBase console reached the app as that console account instead of the
+ * app user the platform signed in, holding no role in the app and getting 403
+ * on every request. Browser auth is the session token the SDK manages
+ * (`X-Session-Token`); cookies add nothing here.
+ */
+type CookieOptOut = { axiosInstance?: { defaults: { withCredentials: boolean } } };
+const httpTransport = taruviClient.httpClient as unknown as CookieOptOut;
+if (httpTransport.axiosInstance) {
+  httpTransport.axiosInstance.defaults.withCredentials = false;
+}
