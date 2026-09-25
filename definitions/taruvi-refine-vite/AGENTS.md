@@ -21,17 +21,20 @@ This is a **Refine.dev v5** project - a React-based framework for building admin
 
 **CRITICAL:** Even if the user asks for plain HTML, CSS, or JavaScript — always use React, Refine v5 hooks, MUI components, and TypeScript. Do not build outside the framework.
 
-IMPORTANT: Always use Context7 MCP Skill when I need library/API, Refine v5, MUI documentation without me having to explicitly ask.
+For Refine v5 / MUI v7 / TaruviBase API details, use the activated skills (`taruvi-app-developer`, `taruvi-refine-providers`) and the `tool_taruvi_get_ai_docs` tool. There is no Context7 or general web-docs tool available here.
 
-**When confused or need clarification:** Use the Task tool with `subagent_type='Explore'` and set thoroughness to "medium" or "very thorough" to understand the codebase patterns before making changes.
+**When confused or need clarification:** use the `investigate` tool to explore the codebase patterns before making changes.
 
 ## Pre-Work Checklist
 
 ### Before Starting Any Task:
 
-1. **Create a Project Spec Document** - Run exploration, document resources/providers/auth flow, identify dependencies, map affected files
-2. **Read Relevant Files** - Always use Read tool before editing, check existing patterns
-3. **Plan with TodoWrite** - Break down complex tasks into steps, track progress
+This is a hackathon environment — speed to a working build matters more than upfront documentation. Default to building, not planning.
+
+1. **One-pass spec, if any — never a back-and-forth** - A short spec note in `docs/spec.md` (resources, fields, relations, provider meta, page list) is fine, but write it once and move straight to building. Do not keep revising, re-reviewing, or expanding it, and do not run multiple rounds of clarifying questions. If something is unclear, ask **once**, in a single batch, only when genuinely blocked (missing credentials, a destructive/irreversible action, or ambiguous scope with no reasonable default) — otherwise make a reasonable assumption, state it in one line, and start building. Read at most 2-3 skill references - required tool argument shapes are in the tool descriptions themselves, not in the references.
+2. **Read Relevant Files** - Use the `read` tool before editing the files you're about to touch, but keep this targeted — not a full codebase survey.
+3. **Ship an initial working version first** - Get a functional first pass (schema + seed data + core pages wired to live data) built and deployed quickly, then iterate in follow-up turns based on feedback rather than trying to nail every detail up front.
+4. **Plan with `update_plan`** - For multi-step work, track progress with `update_plan` instead of continuing to elaborate the spec note.
 
 ### Notification Rule
 
@@ -54,7 +57,7 @@ For any task that **renders, styles, or restyles UI** — new pages, layouts, fo
 1. You MUST open and read [`UI_Guidelines.md`](UI_Guidelines.md) first. It is the companion to the MUI theme and resolves design-system ambiguities the theme cannot encode on its own.
 2. The single source of truth for design tokens is [`themeOptions.ts`](themeOptions.ts) — import `taruviTokens` for raw values:
    ```ts
-   import { taruviTokens } from "../../themeOptions"; // or from "@/theme/themeOptions"
+   import { taruviTokens } from "../../themeOptions"; // relative only - there is NO "@/" alias
    ```
    Never hardcode brand hex strings (`#1E88E5`, `#388e3c`, `#1AB3E6`, etc.) — pull them from `taruviTokens`.
 3. Prefer plain MUI components (`<Button>`, `<Chip>`, `<Card>`, `<TextField>`, `<Alert>`, `<Table*>`, `<ListItemButton>`, `<Breadcrumbs>`, `<Tabs>`, `<Dialog>`, …) — the theme already applies every spec'd size, weight, radius, padding, shadow, and color via component overrides. Do not reimplement these styles with `sx` or custom CSS.
@@ -91,6 +94,29 @@ Do not implement from memory. Do not treat prior knowledge as sufficient. If the
 - Always access users via the `user` provider (`dataProviderName: "user"`, with `resource: "users"`).
 - Manage users/roles through the dedicated user/app APIs and MCP tools (`list_users`, `create_user`, `update_user`, `manage_roles`, `manage_role_assignments`) — not manual SQL CRUD on identity data.
 - If user identity data is not available to the current role, degrade gracefully in UI (no crashing/spammy retries).
+
+## Dependency constraint: two MUI majors coexist on purpose
+
+`node_modules/@refinedev/mui/node_modules/@mui/*` holds a **complete second MUI
+major (v6)** next to the hoisted v7 your code uses. This looks like a packaging
+mistake. It is not - do not "fix" it:
+
+- `@refinedev/mui@7.0.1` is published against MUI **v6**. Its bundle
+  deep-imports 24 `@mui/icons-material/esm/<Name>` paths that v7's exports map
+  refuses, and imports `@mui/material/Grid2`, which **v7 removed entirely**.
+  Forcing it onto v7 (via `overrides`) fails the build on both counts, and
+  `Grid2` -> `Grid` is an API change, not a rename.
+- Note that npm-style **nested** `overrides` in `package.json` are silently
+  ignored by bun ("Bun currently does not support nested overrides"), so that
+  block does nothing here either way. Only the flat form is honoured.
+
+The consequence you must design around: two MUI copies mean **two
+ThemeProvider contexts and two emotion caches**, so `themeOptions.ts` /
+`taruviTokens` do **not** reach components rendered by `@refinedev/mui` itself.
+Write your own MUI v7 components for anything that must be themed, and keep
+`@refinedev/mui` usage limited to what the template already does. Your own
+imports always resolve to the hoisted v7 tree, so ordinary app code is
+unaffected.
 
 ## IMPORTANT: Refine v5 Syntax Changes
 
@@ -245,11 +271,16 @@ This matters most for `useList`, `useDataGrid`, and `useMany`, because unstable 
 ## Environment Configuration
 
 ```env
-# .env.local
+# .env.local  (written by the platform - do not edit it yourself)
 TARUVI_SITE_URL=http://tenant1.127.0.0.1.nip.io:8000
-TARUVI_API_KEY=secret
 TARUVI_APP_SLUG=sample-app
 ```
+
+> **Never add `TARUVI_API_KEY` here.** These values are compiled into the
+> browser bundle by Vite `define`, so an app API key placed in `.env.local`
+> would ship to every visitor. The client authenticates as the signed-in end
+> user (`apiKey: "browser"`); server-side work belongs in a TaruviBase
+> serverless function, which gets its own credentials.
 
 ```typescript
 // src/taruviClient.ts
@@ -274,7 +305,7 @@ export const taruviClient = new Client({
 
 **File Paths:** App: `/src/App.tsx` | Providers: `/src/providers/refineProviders.ts` | Client: `/src/taruviClient.ts` | Navkit profile menu: `/src/navkit/useNavkitProfileMenuItems.tsx` | Pages: `/src/pages/{resource}/` | Components: `/src/components/` | Env: `/.env.local`
 
-**Navkit profile menu:** Custom avatar-dropdown items live in `useNavkitProfileMenuItems` and are passed to `<Navkit profileMenuItems={...} />` in `App.tsx`. See [docs/GETTING_STARTED.md — Custom profile menu items](docs/GETTING_STARTED.md#custom-profile-menu-items).
+**Navkit profile menu:** Custom avatar-dropdown items live in `useNavkitProfileMenuItems` and are passed to `<Navkit profileMenuItems={...} />` in `App.tsx`.
 
 **Key Commands:**
 ```bash
@@ -327,9 +358,9 @@ npm run refine       # Run Refine CLI
 1. **Always use Refine v5 syntax** - Check the v5 syntax section
 2. **Always read files before editing** - Use Read tool
 3. **Follow existing patterns** - Check similar components
-4. **Use TodoWrite for complex tasks** - Track progress
-5. **Explore when confused** - Use Task tool with Explore agent
-6. **Create spec doc before starting** - Understand context
+4. **Use `update_plan` for multi-step work** - Track progress as you go
+5. **Explore when confused** - Use the `investigate` tool
+6. **Spec once, then build** - A brief spec note is fine, but don't loop on revising it or on multiple rounds of questions; ship a working first pass, then refine from feedback
 7. **Test incrementally** - Don't make many changes at once
 8. **Validate schemas** - Use MCP tools to check table structure
 9. **Keep it simple** - Don't over-engineer
