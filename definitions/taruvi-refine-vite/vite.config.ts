@@ -184,10 +184,21 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react(), createClientLogPlugin()],
     server: {
-      // The platform's container preview proxy does not forward the HMR
-      // websocket; leaving HMR on floods the console with connection errors
-      // on every preview load. Local dev (no CONTAINER_ENV) keeps HMR.
-      hmr: process.env.CONTAINER_ENV ? false : undefined,
+      // Behind the platform's preview proxy the page lives on the platform
+      // host while Vite listens on the container's port, so the client must
+      // dial the page's host and the platform's port for its HMR socket. The
+      // platform provides both; the host is left unset so Vite's client
+      // falls back to the page's hostname. Without them the client dialled
+      // localhost:<container port> and never connected. A container with no
+      // proxy settings keeps HMR off; plain local dev keeps Vite's default.
+      hmr: env.VITE_HMR_CLIENT_PORT
+        ? {
+            clientPort: Number(env.VITE_HMR_CLIENT_PORT),
+            protocol: env.VITE_HMR_PROTOCOL === "wss" ? "wss" : "ws",
+          }
+        : process.env.CONTAINER_ENV
+          ? false
+          : undefined,
       allowedHosts: true,
     },
     optimizeDeps: {
@@ -195,9 +206,9 @@ export default defineConfig(({ mode }) => {
       // including per-icon deep imports like @mui/icons-material/AddRounded —
       // is discovered and optimized in one pass before the first request.
       // Without this, deps discovered mid-session trigger re-optimization
-      // that bumps the dep hash; the preview proxy drops vite's HMR
-      // websocket, so the browser is never told to reload and hangs on
-      // 504 "Outdated Optimize Dep" responses.
+      // that bumps the dep hash; a preview without a working HMR socket
+      // is never told to reload and hangs on 504 "Outdated Optimize Dep"
+      // responses.
       entries: ["index.html", "src/**/*.{ts,tsx}"],
       include: [
         "@emotion/react",
