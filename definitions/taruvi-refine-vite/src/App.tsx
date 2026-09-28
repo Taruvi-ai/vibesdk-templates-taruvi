@@ -30,12 +30,13 @@ import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
 import { useContext, useRef, useEffect } from "react";
 import { Home } from "./pages/home";
 import { Login } from "./pages/login";
+import { AuthCheckPending } from "./components/auth/AuthCheckPending";
 import { useNavkitProfileMenuItems } from "./navkit/useNavkitProfileMenuItems";
 
 const AppContent = () => {
   const { setMode } = useContext(ColorModeContext);
   const navRef = useRef<HTMLDivElement>(null);
-  const { settings } = useAppSettings()
+  const { settings } = useAppSettings();
   const profileMenuItems = useNavkitProfileMenuItems();
 
   useEffect(() => {
@@ -47,22 +48,34 @@ const AppContent = () => {
 
   return (
     <>
-      <div
-        ref={navRef}
-        data-nav-container
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1300,
-          width: '100%',
-        }}
-      >
-        <Navkit
-          client={taruviClient}
-          getTheme={(theme) => setMode(theme)}
-          profileMenuItems={profileMenuItems}
-        />
-      </div>
+      {/*
+        Navkit is rendered only for a signed-in user.
+        It fetches protected account settings as soon as it mounts, in an
+        un-awaited promise with no catch, so mounting it before there is a
+        session guarantees an unhandled rejection - which index.html's global
+        handler turns into a full-screen "Fatal Error" overlay covering the
+        sign-in form. The result was that an unauthenticated app (every fresh
+        preview) looked broken rather than asking the user to sign in.
+        The nav bar has nothing to show pre-auth anyway.
+      */}
+      {taruviClient.tokenClient.isAuthenticated() && (
+        <div
+          ref={navRef}
+          data-nav-container
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 1300,
+            width: '100%',
+          }}
+        >
+          <Navkit
+            client={taruviClient}
+            getTheme={(theme) => setMode(theme)}
+            profileMenuItems={profileMenuItems}
+          />
+        </div>
+      )}
       <RefineSnackbarProvider>
             <DevtoolsProvider>
               <Refine
@@ -91,6 +104,7 @@ const AppContent = () => {
                       <Authenticated
                         key="login-route"
                         fallback={<Outlet />}
+                        loading={<AuthCheckPending />}
                       >
                         <Navigate to="/" replace />
                       </Authenticated>
@@ -103,6 +117,7 @@ const AppContent = () => {
                       <Authenticated
                         key="authenticated-inner"
                         fallback={<LoginRedirect />}
+                        loading={<AuthCheckPending />}
                       >
                         <ThemedLayout
                           Header={() => null}

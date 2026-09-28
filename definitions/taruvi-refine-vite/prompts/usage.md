@@ -20,12 +20,13 @@ Non-negotiables, enforced by `AGENTS.md` (read it first — it is authoritative)
   "@mui/material"` IS the new grid (`size={{ xs: 12, md: 6 }}` props). Never
   import `@mui/material/Grid2` or `@mui/material/Unstable_Grid2`, and never
   `bun install` a package SUBPATH — subpaths are not packages.
-- **Page anatomy**: every list page is built on
-  `src/components/ListPageShell.tsx` (never hand-roll the scaffold) with
-  search + server-side filters + active-filter chips + pagination + the 4
-  empty states; show pages carry breadcrumb + title + status chip + actions +
-  meta + tabs-with-counts; destructive actions get confirmation dialogs;
-  never render a blank page during load.
+- **Page anatomy**: every list page ships search + at least one server-side
+  filter + an active-filter chip row + pagination + the four distinct empty
+  states (no data yet / no results / no matching items / unable to load), built
+  to `UI_Guidelines.md` (§4.6, §4.7) and the DataGrid checklist in the skill;
+  show pages carry breadcrumb + title + status chip + actions + meta +
+  tabs-with-counts; destructive actions get confirmation dialogs; never render a
+  blank page during load. Wrap page bodies in `src/components/PageContainer.tsx`.
 - **User data**: only via the `user` provider and user/role tools — never
   custom identity tables.
 - Taruvi config comes from `.env.local` (`TARUVI_SITE_URL`,

@@ -9,6 +9,6 @@
   "src/index.tsx",
   "src/taruviClient.ts",
   "src/providers/refineProviders.ts",
-  "src/components/ListPageShell.tsx",
+  "src/components/PageContainer.tsx",
   "src/pages/"
 ]

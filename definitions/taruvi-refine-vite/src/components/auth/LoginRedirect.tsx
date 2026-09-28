@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useLogin } from "@refinedev/core";
-import { AuthPage } from "@refinedev/mui";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
+import { TaruviSignInForm } from "./TaruviSignInForm";
 
 /**
  * True when this document is embedded in another page - the platform's
@@ -28,8 +28,9 @@ const isEmbedded = (): boolean => {
  * leaves the preview blank. The form submits through the credentials-aware
  * auth provider, so the session is established without leaving the app.
  *
- * Password reset is not offered here because the package provider has no
- * `forgotPassword` implementation; the hosted page handles that flow.
+ * Password reset and registration are not offered here: TaruviBase's hosted
+ * pages own those flows. This app has exactly one auth surface, and its
+ * identity provider is TaruviBase either way.
  */
 export const LoginRedirect: React.FC = () => {
   const { mutate: login } = useLogin();
@@ -43,14 +44,7 @@ export const LoginRedirect: React.FC = () => {
   }, [embedded, login]);
 
   if (embedded) {
-    return (
-      <AuthPage
-        type="login"
-        forgotPasswordLink={false}
-        rememberMe={false}
-        title="Sign in to preview this app"
-      />
-    );
+    return <TaruviSignInForm title="Sign in to preview this app" />;
   }
 
   return (
