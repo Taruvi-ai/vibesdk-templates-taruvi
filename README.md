@@ -34,13 +34,27 @@ choice or shipped in the catalog.
 2. `generate_template_catalog.py` writes `template_catalog.json` from `build/`.
 3. `create_zip.py` packages each valid `build/<name>/` into `zips/<name>.zip`.
 4. `wrangler r2 object put` uploads `template_catalog.json` and every `zips/*.zip` to the
-   **`vibesdk-templates` R2 bucket** (`R2_BUCKET_NAME`), where VibeSDK fetches them at runtime.
+   R2 bucket named by `R2_BUCKET_NAME`, where VibeSDK fetches them at runtime.
 
 `zips/taruvi-refine-vite.zip` and `template_catalog.json` are committed here because they are the
 live artifacts currently deployed to that bucket. Local rollback copies (`*.bak`) are gitignored.
 
-Set `R2_BUCKET_NAME=vibesdk-templates` (plus Cloudflare credentials) before running the deploy;
-never place those credentials in a tracked file.
+**Pick the bucket that the target environment actually reads** — they differ, and uploading to the
+wrong one means the template silently never goes live:
+
+| Target | Bucket | Declared in |
+| --- | --- | --- |
+| **Production** | `vibesdk-templates-prod` | `buildathon-vibesdk/wrangler.jsonc` (`TEMPLATES_BUCKET`) |
+| Staging | `vibesdk-templates` | `buildathon-vibesdk/wrangler.staging.jsonc` |
+
+So set `R2_BUCKET_NAME=vibesdk-templates-prod` for a production rollout (plus Cloudflare
+credentials); never place those credentials in a tracked file. Verify against the platform's
+wrangler config rather than trusting this table if the two ever disagree.
+
+Nothing links a bucket object back to a git revision: `template_catalog.json` carries no hash,
+version or timestamp, so divergence between this repo and what production serves is undetectable
+from either side. Re-upload after every template change, and treat the committed zip as the
+intended artifact rather than proof of what is live.
 
 ### Fork notes
 
