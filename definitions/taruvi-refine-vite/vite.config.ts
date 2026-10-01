@@ -191,14 +191,20 @@ export default defineConfig(({ mode }) => {
       // falls back to the page's hostname. Without them the client dialled
       // localhost:<container port> and never connected. A container with no
       // proxy settings keeps HMR off; plain local dev keeps Vite's default.
+      // The error overlay is off: while the agent writes files one at a
+      // time, a page can import a module that does not exist yet, and the
+      // full-screen overlay hid the working preview until the next write.
+      // The error still reaches the browser console (and the agent's
+      // console check); the page keeps its last good render.
       hmr: env.VITE_HMR_CLIENT_PORT
         ? {
             clientPort: Number(env.VITE_HMR_CLIENT_PORT),
             protocol: env.VITE_HMR_PROTOCOL === "wss" ? "wss" : "ws",
+            overlay: false,
           }
         : process.env.CONTAINER_ENV
           ? false
-          : undefined,
+          : { overlay: false },
       allowedHosts: true,
     },
     optimizeDeps: {
