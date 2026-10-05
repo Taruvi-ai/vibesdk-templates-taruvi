@@ -165,9 +165,26 @@ const getAppSlug = (): string => {
   }
 };
 
+/**
+ * Apply console-style substitutions (`%s`, `%d`, `%o`...) so a warning such as
+ * React's "Encountered two children with the same key, `%s`" reads with its
+ * values in place instead of the raw format string followed by the arguments.
+ */
+const applyFormat = (values: unknown[]): unknown[] => {
+  const [first, ...rest] = values;
+  if (typeof first !== "string" || !/%[sdifoOc]/.test(first)) return values;
+  let index = 0;
+  const formatted = first.replace(/%[sdifoOc]/g, (token) => {
+    if (index >= rest.length) return token;
+    const value = rest[index++];
+    return token === "%c" ? "" : serializeValue(value);
+  });
+  return [formatted, ...rest.slice(index)];
+};
+
 const record = (source: LogSource, values: unknown[], meta?: Record<string, unknown>): void => {
   try {
-    const text = values
+    const text = applyFormat(values)
       .map((v) => serializeValue(v))
       .filter((s) => s.length > 0)
       .join(" ");
