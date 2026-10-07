@@ -12,6 +12,7 @@ import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 import { reportError } from "../utils/clientLogger";
+import { copyToClipboard } from "../utils/copyToClipboard";
 
 type Props = {
   children: ReactNode;
@@ -58,18 +59,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (!error) return;
     const text = formatError(error);
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
+      await copyToClipboard(text);
       this.setState({ copied: true });
       if (this.copyResetTimer) clearTimeout(this.copyResetTimer);
       this.copyResetTimer = setTimeout(() => this.setState({ copied: false }), 1500);
