@@ -23,6 +23,13 @@ jobs:
       with:
         node-version: '20'
         
+    # generate_templates.py --sync-lockfiles runs `bun i` for every template;
+    # without Bun on the runner each run failed with "command not found".
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
