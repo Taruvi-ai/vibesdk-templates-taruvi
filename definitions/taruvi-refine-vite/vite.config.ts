@@ -172,6 +172,54 @@ const createClientLogPlugin = (): Plugin => ({
   },
 });
 
+const DEPS_RESET_ENDPOINT = "/__taruvi_reset_deps";
+const DEPS_RESET_COOLDOWN_MS = 60_000;
+// Survives the config reload that server.restart() performs.
+const DEPS_RESET_STATE = Symbol.for("taruvi.depsReset");
+
+/**
+ * Vite rebuilds its dependency cache when the agent adds an import mid-session.
+ * After many rebuilds the cache can reference a file Vite itself answers with
+ * 504 "Outdated Optimize Dep", and every load of the app is then a blank page.
+ * index.html calls this endpoint when the app's modules fail to load; the
+ * server rebuilds the cache from scratch and the page reloads.
+ */
+const createDepsRecoveryPlugin = (): Plugin => ({
+  name: "taruvi:deps-recovery",
+  apply: "serve",
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      if (req.url?.split("?")[0] !== DEPS_RESET_ENDPOINT) {
+        next();
+        return;
+      }
+      if (req.method !== "POST") {
+        res.statusCode = 405;
+        res.setHeader("Allow", "POST");
+        res.end("Method Not Allowed");
+        return;
+      }
+      const state = globalThis as unknown as Record<symbol, number | undefined>;
+      const now = Date.now();
+      res.statusCode = 202;
+      if (now - (state[DEPS_RESET_STATE] ?? 0) < DEPS_RESET_COOLDOWN_MS) {
+        res.end("already rebuilding");
+        return;
+      }
+      state[DEPS_RESET_STATE] = now;
+      res.end("rebuilding");
+      server.config.logger.warn(
+        "[taruvi:deps-recovery] the app's modules failed to load; rebuilding the dependency cache",
+      );
+      setTimeout(() => {
+        server.restart(true).catch((err: Error) => {
+          server.config.logger.error(`[taruvi:deps-recovery] restart failed: ${err.message}`);
+        });
+      }, 0);
+    });
+  },
+});
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
@@ -182,7 +230,7 @@ export default defineConfig(({ mode }) => {
       __TARUVI_API_KEY__: JSON.stringify(env.TARUVI_API_KEY ?? ""),
       __TARUVI_APP_TITLE__: JSON.stringify(env.TARUVI_APP_TITLE ?? ""),
     },
-    plugins: [react(), createClientLogPlugin()],
+    plugins: [react(), createClientLogPlugin(), createDepsRecoveryPlugin()],
     server: {
       // Behind the platform's preview proxy the page lives on the platform
       // host while Vite listens on the container's port, so the client must

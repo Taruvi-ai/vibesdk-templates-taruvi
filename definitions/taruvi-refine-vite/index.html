@@ -115,7 +115,46 @@
         });
       })();
     </script>
-    <script type="module" src="/src/index.tsx"></script>
+    <script>
+      // Dev server only: when the app's modules fail to load (a broken Vite
+      // dependency cache answers 504), ask the server to rebuild the cache and
+      // reload once it is back. Without this the page stays blank with no error.
+      (function () {
+        if (!document.querySelector('script[src="/@vite/client"]')) return;
+        var KEY = '__taruvi_deps_recovery';
+        var WINDOW_MS = 10 * 60 * 1000;
+        var MAX_ATTEMPTS = 2;
+        function waitForServer(deadline) {
+          return new Promise(function (resolve) { setTimeout(resolve, 2000); })
+            .then(function () { return fetch('/@vite/client', { cache: 'no-store' }); })
+            .then(function (r) { if (!r.ok && Date.now() < deadline) return waitForServer(deadline); })
+            .catch(function () { if (Date.now() < deadline) return waitForServer(deadline); });
+        }
+        window.__taruviRecoverDeps = function (reason) {
+          var now = Date.now();
+          var attempts = [];
+          try {
+            attempts = JSON.parse(sessionStorage.getItem(KEY) || '[]').filter(function (t) { return now - t < WINDOW_MS; });
+          } catch (e) {}
+          if (attempts.length >= MAX_ATTEMPTS) {
+            console.error('[taruvi] the app still fails to load after rebuilding its dependencies: ' + reason);
+            return;
+          }
+          attempts.push(now);
+          try { sessionStorage.setItem(KEY, JSON.stringify(attempts)); } catch (e) {}
+          console.warn('[taruvi] ' + reason + '; rebuilding the dependency cache and reloading');
+          fetch('/__taruvi_reset_deps', { method: 'POST' })
+            .catch(function () {})
+            .then(function () { return waitForServer(now + 90 * 1000); })
+            .then(function () { location.reload(); });
+        };
+        window.addEventListener('vite:preloadError', function (e) {
+          e.preventDefault();
+          window.__taruviRecoverDeps('a lazily loaded module failed to load');
+        });
+      })();
+    </script>
+    <script type="module" src="/src/index.tsx" onerror="window.__taruviRecoverDeps && window.__taruviRecoverDeps('the app modules failed to load')"></script>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
