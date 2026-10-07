@@ -15,6 +15,7 @@ import Typography from "@mui/material/Typography";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
 import { getLastBoundaryAt, getSnapshot, subscribe, type LogEntry, type LogSource } from "../utils/clientLogger";
+import { copyToClipboard } from "../utils/copyToClipboard";
 
 const BOUNDARY_SUPPRESS_WINDOW_MS = 1500;
 
@@ -39,13 +40,6 @@ const SNACKBAR_CLOSED: SnackbarState = { open: false, severity: "success", messa
 const formatEntry = (entry: LogEntry) => {
   const time = new Date(entry.timestamp).toLocaleTimeString();
   return `[${time}] [${entry.source}] ${entry.text}`;
-};
-
-const copyText = async (text: string) => {
-  if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-    throw new Error("Clipboard access is not available in this browser.");
-  }
-  await navigator.clipboard.writeText(text);
 };
 
 export const ConsoleLogDrawer = () => {
@@ -85,7 +79,7 @@ export const ConsoleLogDrawer = () => {
       return;
     }
     try {
-      await copyText(text);
+      await copyToClipboard(text);
       setSnackbar({ open: true, severity: "success", message: "Error copied", description: "The latest error is in your clipboard." });
     } catch (error) {
       setSnackbar({
