@@ -30,6 +30,8 @@ import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
 import { useContext, useRef, useEffect } from "react";
 import { Home } from "./pages/home";
 import { Login } from "./pages/login";
+import { Register } from "./pages/register";
+import { ForgotPassword } from "./pages/forgotPassword";
 import { AuthCheckPending } from "./components/auth/AuthCheckPending";
 import { useNavkitProfileMenuItems } from "./navkit/useNavkitProfileMenuItems";
 
@@ -111,6 +113,8 @@ const AppContent = () => {
                     }
                   >
                     <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                   </Route>
                   <Route
                     element={

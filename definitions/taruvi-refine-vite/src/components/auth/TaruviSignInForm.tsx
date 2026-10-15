@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useLogin } from "@refinedev/core";
+import { Link as RouterLink } from "react-router";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CircularProgress from "@mui/material/CircularProgress";
+import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -135,6 +137,14 @@ export const TaruviSignInForm: React.FC<{ title?: string }> = ({
               >
                 {isPending ? "Signing in" : "Sign in"}
               </Button>
+              <Stack direction="row" justifyContent="space-between">
+                <Link component={RouterLink} to="/forgot-password" variant="body2">
+                  Forgot password?
+                </Link>
+                <Link component={RouterLink} to="/register" variant="body2">
+                  Create an account
+                </Link>
+              </Stack>
             </Stack>
           </Box>
         </CardContent>

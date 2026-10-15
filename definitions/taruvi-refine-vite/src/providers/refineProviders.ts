@@ -186,6 +186,23 @@ export const taruviAuthProvider: typeof packageAuthProvider = {
       ? packageAuthProvider.register(params)
       : { success: false, error: { name: "RegisterError", message: "Registration is not available." } };
   },
+  /**
+   * TaruviBase completes password resets only on its hosted pages, which
+   * refuse to render in a frame (`X-Frame-Options: DENY`), so the reset opens
+   * in a new tab instead of navigating the preview to a blank page. The user
+   * finishes the reset there and signs in here.
+   */
+  forgotPassword: async () => {
+    const resetUrl = `${__TARUVI_SITE_URL__.replace(/\/+$/, "")}/accounts/password/reset/`;
+    window.open(resetUrl, "_blank", "noopener,noreferrer");
+    return {
+      success: true,
+      successNotification: {
+        message: "Password reset opened in a new tab",
+        description: "Finish the reset there, then sign in here with your new password.",
+      },
+    };
+  },
   getIdentity: async () => {
     const identity = await packageAuthProvider.getIdentity?.();
     const email = (identity as { email?: string } | null | undefined)?.email;
