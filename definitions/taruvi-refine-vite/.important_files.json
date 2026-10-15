@@ -10,5 +10,6 @@
   "src/taruviClient.ts",
   "src/providers/refineProviders.ts",
   "src/components/PageContainer.tsx",
+  "src/components/ListPageShell.tsx",
   "src/pages/"
 ]
