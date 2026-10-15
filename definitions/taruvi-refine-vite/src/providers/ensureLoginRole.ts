@@ -1,5 +1,3 @@
-import { taruviClient } from "../taruviClient";
-
 /**
  * Assigns this app's default role to the signed-in user, the moment they are
  * authenticated, so a fresh user is never left role-less and hitting 403 on
@@ -7,9 +5,14 @@ import { taruviClient } from "../taruviClient";
  *
  * The platform provisions a public function `assign-user-role-on-login` into
  * every built app (see the platform's login-role-provision service). It finds
- * the user by email, activates them, and assigns the default `User` role. This
- * mirrors the Build-a-thon app, whose frontend calls the same function on
- * login. Here it is triggered from the auth provider's `getIdentity`, which
+ * the active user with this email and assigns the default `User` role; it
+ * never activates an account.
+ *
+ * It is called ANONYMOUSLY - no session token, no cookies. A public function
+ * called anonymously runs with the permissions of the user who created it
+ * (the app's owner), which may assign roles. Called with the new user's own
+ * session it would run as that role-less user and the assignment would be
+ * refused, so the SDK client (which attaches the session) is not used here. Here it is triggered from the auth provider's `getIdentity`, which
  * Refine runs on every authenticated load, so it covers the in-app login form,
  * the hosted-login redirect, and the platform's adopted preview session alike.
  *
@@ -47,10 +50,15 @@ export function ensureLoginRole(email: string | undefined): void {
   // Fire-and-forget: the session is already usable; the role assignment just
   // needs to land before the user's first write, which the network round-trip
   // comfortably beats.
-  void taruviClient.httpClient
-    .post(`api/apps/${appSlug}/functions/${FUNCTION_SLUG}/execute/`, {
-      async: false,
-      params: { email: target },
+  const siteUrl = (__TARUVI_SITE_URL__ || "").replace(/\/+$/, "");
+  void fetch(`${siteUrl}/api/apps/${appSlug}/functions/${FUNCTION_SLUG}/execute/`, {
+    method: "POST",
+    credentials: "omit",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ async: false, params: { email: target } }),
+  })
+    .then((response) => {
+      if (!response.ok) throw { status: response.status };
     })
     .catch((error: unknown) => {
       const status = errorStatus(error);
