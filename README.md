@@ -288,3 +288,7 @@ This script will scan the generated templates and collate metadata and documenta
 Cloudflare VibeSDK is an open source platform for building vibe coding experiences. This repository provides the curated, production-minded templates that VibeSDK’s AI agents use to scaffold applications. The full platform can be deployed to a Cloudflare Workers paid account.
 
 If you’re building your own vibe coding platform, these templates provide a solid and extensible foundation.
+
+## UTM Tracking
+
+https://taruvibase.com/?utm_source=github&utm_medium=readme&utm_campaign=vibesdk-templates-taruvi
