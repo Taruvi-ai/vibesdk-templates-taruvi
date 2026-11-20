@@ -1,5 +1,4 @@
 import { Authenticated, Refine } from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import {
@@ -79,77 +78,74 @@ const AppContent = () => {
         </div>
       )}
       <RefineSnackbarProvider>
-            <DevtoolsProvider>
-              <Refine
-                dataProvider={{
-                  default: taruviDataProvider,
-                  storage: taruviStorageProvider,
-                  app: taruviAppProvider,
-                  user: taruviUserProvider,
-                }}
-                notificationProvider={useNotificationProvider}
-                routerProvider={routerProvider}
-                authProvider={taruviAuthProvider}
-                // accessControlProvider={taruviAccessControlProvider} // Uncomment to enable Cerbos-based access control
-                resources={[
-                  // Add your resources here
-                ]}
-                options={{
-                  syncWithLocation: true,
-                  warnWhenUnsavedChanges: true,
-                  projectId: "obEpHJ-M7JimA-31GF1J",
-                }}
-              >
-                <Routes>
-                  <Route
-                    element={
-                      <Authenticated
-                        key="login-route"
-                        fallback={<Outlet />}
-                        loading={<AuthCheckPending />}
-                      >
-                        <Navigate to="/" replace />
-                      </Authenticated>
-                    }
+        <Refine
+          dataProvider={{
+            default: taruviDataProvider,
+            storage: taruviStorageProvider,
+            app: taruviAppProvider,
+            user: taruviUserProvider,
+          }}
+          notificationProvider={useNotificationProvider}
+          routerProvider={routerProvider}
+          authProvider={taruviAuthProvider}
+          // accessControlProvider={taruviAccessControlProvider} // Uncomment to enable Cerbos-based access control
+          resources={[
+            // Add your resources here
+          ]}
+          options={{
+            syncWithLocation: true,
+            warnWhenUnsavedChanges: true,
+            projectId: "obEpHJ-M7JimA-31GF1J",
+          }}
+        >
+          <Routes>
+            <Route
+              element={
+                <Authenticated
+                  key="login-route"
+                  fallback={<Outlet />}
+                  loading={<AuthCheckPending />}
+                >
+                  <Navigate to="/" replace />
+                </Authenticated>
+              }
+            >
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+            </Route>
+            <Route
+              element={
+                <Authenticated
+                  key="authenticated-inner"
+                  fallback={<LoginRedirect />}
+                  loading={<AuthCheckPending />}
+                >
+                  <ThemedLayout
+                    Header={() => null}
+                    Sider={CustomSider}
+                    initialSiderCollapsed={true}
+                    childrenBoxProps={{ sx: { p: 0 } }}
                   >
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                  </Route>
-                  <Route
-                    element={
-                      <Authenticated
-                        key="authenticated-inner"
-                        fallback={<LoginRedirect />}
-                        loading={<AuthCheckPending />}
-                      >
-                        <ThemedLayout
-                          Header={() => null}
-                          Sider={CustomSider}
-                          initialSiderCollapsed={true}
-                          childrenBoxProps={{ sx: { p: 0 } }}
-                        >
-                          <Box sx={{ ml: { xs: 0, md: '72px' }, transition: 'margin-left 0.2s ease-in-out' }}>
-                            <ErrorBoundary>
-                              <Outlet />
-                            </ErrorBoundary>
-                          </Box>
-                        </ThemedLayout>
-                      </Authenticated>
-                    }
-                  >
-                    <Route index element={<Home />} />
-                    <Route path="*" element={<ErrorComponent />} />
-                  </Route>
-                </Routes>
+                    <Box sx={{ ml: { xs: 0, md: '72px' }, transition: 'margin-left 0.2s ease-in-out' }}>
+                      <ErrorBoundary>
+                        <Outlet />
+                      </ErrorBoundary>
+                    </Box>
+                  </ThemedLayout>
+                </Authenticated>
+              }
+            >
+              <Route index element={<Home />} />
+              <Route path="*" element={<ErrorComponent />} />
+            </Route>
+          </Routes>
 
-                <RefineKbar />
-                <UnsavedChangesDialog />
-                <DocumentTitleHandler handler={() => settings?.displayName || ""}/>
-              </Refine>
-              <DevtoolsPanel />
-            </DevtoolsProvider>
-          </RefineSnackbarProvider>
+          <RefineKbar />
+          <UnsavedChangesDialog />
+          <DocumentTitleHandler handler={() => settings?.displayName || ""}/>
+        </Refine>
+      </RefineSnackbarProvider>
     </>
   );
 };
